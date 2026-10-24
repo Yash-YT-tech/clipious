@@ -28,8 +28,8 @@ Server: `http://192.168.1.4:5566` (LAN) or `http://100.109.64.77:5566` (Tailscal
 | Tool | Status | Location / notes |
 |---|---|---|
 | adb | Present | system `adb`, tablet visible but **unauthorized** |
-| scrcpy 5.0.1 | Installed & verified | `.tooling/scrcpy/scrcpy`; SHA-256 OK, bundled SDL3/ffmpeg/server |
-| Artemis | Repository + Python env staged | `.tooling/artemis`; no API key, no tasks run |
+| scrcpy 5.0.1 | Installed & verified (3 s recording) | `.tooling/scrcpy/scrcpy`; SHA-256 OK, bundled SDL3/ffmpeg/server |
+| Artemis | Repository + Python env staged; CLI verified | `.tooling/artemis`; no API key, no tasks run, helper auto-install off |
 | Flutter/Dart | Installed | `.tooling/flutter` (3.35.3 / Dart 3.9.2) |
 | APK | Built & verified | `dist/clipious-1.22.15-arm64-profile.apk` (arm64, debug-signed) |
 | Server | Live | Invidious `2026.08.04-48c6110`, LAN `192.168.1.4:5566` |

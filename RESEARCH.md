@@ -219,6 +219,8 @@ Accessed 2026-10-24 unless stated otherwise.
   `9f969d30cc574816077edecda65719c1c70b0aee1df1ba5fa00779ac07b8fd6e` — **OK**.
 - Installed locally at `.tooling/scrcpy/scrcpy` (44 MB with its bundled `adb`,
   `scrcpy-server`, SDL 3.4.18 and libavcodec). `scrcpy --version` runs successfully.
+- **Recording verified on the tablet:** `scrcpy --no-audio --no-playback --time-limit=3
+  --record=…` produced a 236 KB MP4; an extracted frame shows the app's fixed Comments tab.
 - Capabilities: screen mirroring, keyboard/mouse/input injection, audio forwarding (Android
   11+), recording, virtual display, screen-off mirroring. It installs **nothing permanent**
   on the device; it pushes a temporary server while running.
@@ -245,7 +247,9 @@ Accessed 2026-10-24 unless stated otherwise.
   screen is restricted to the test app and the owner explicitly consents to cloud inference.
 - Setup performed locally: repository cloned to `.tooling/artemis` (59 MB), dependency
   installation under `.tooling/artemis/.venv` with `UV_CACHE_DIR` inside `.caches/uv`.
-  **No Artemis task has been run** and no API key or `.env` secret was created.
+  `artemis --help` works. `.env` sets `ARTEMIS_HELPER_AUTO_INSTALL=false`,
+  `ARTEMIS_HIERARCHY_BACKEND=uiautomator` and `ARTEMIS_KEEP_DEVICE_AWAKE=false`, with **no
+  API key**. **No Artemis task or cloud inference has been run.**
 
 ### Device state after authorization
 
