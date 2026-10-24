@@ -32,6 +32,15 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Local tooling installed inside the workspace (not part of the app source)
+/.tooling/
+/.caches/
+
+# Local agent/research instructions (contain service tokens; never commit)
+/AGENT_PROMPT_scarpling.md
+/AGENTS_PROMPT_crawl4ai_v2.md
+/.commandcode/
+
 # Symbolication related
 app.*.symbols
 

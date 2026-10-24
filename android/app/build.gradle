@@ -56,6 +56,14 @@ if (keystorePropertiesFile.exists()) {
 android {
     compileSdkVersion 36
 
+    // No plugin in this project compiles native code. Point AGP at the
+    // project-local NDK descriptor when present so builds do not try to
+    // download the NDK into the shared Android SDK.
+    def localNdk = rootProject.file('../.tooling/ndk')
+    if (localNdk.exists()) {
+        ndkPath = localNdk.absolutePath
+    }
+
     dependenciesInfo {
         // Disables dependency metadata when building APKs.
         includeInApk = false
