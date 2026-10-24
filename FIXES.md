@@ -158,6 +158,7 @@ Commit hashes are filled in after the incremental commits.
 | FIX-012 youtu.be links | `3a581a7` |
 | FIX-013 live DASH/stale playback | `705bc7c` |
 | scrcpy/Artemis research + test plan | `196b160` |
+| Device-test results documentation | `a2570d2` |
 
 ## Incomplete / not fixed
 

@@ -141,7 +141,7 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `705bc7c` fix(player): fall back to DASH when a live stream has no progressive/HLS URL
 - `499b6ca` fix(comments): accept Invidious's single authorThumbnail field
 - `3a581a7` fix(android): handle youtu.be short links
-- Final device-test documentation commit on this branch.
+- `a2570d2` docs: record tablet device-test results and new findings
 
 ## Next actions (owner)
 
