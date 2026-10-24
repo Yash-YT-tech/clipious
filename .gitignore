@@ -36,6 +36,9 @@ migrate_working_dir/
 /.tooling/
 /.caches/
 
+# Build deliverables (APK is documented in INSTALLATION.md, not committed)
+/dist/
+
 # Local agent/research instructions (contain service tokens; never commit)
 /AGENT_PROMPT_scarpling.md
 /AGENTS_PROMPT_crawl4ai_v2.md
