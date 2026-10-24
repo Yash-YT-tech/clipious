@@ -61,8 +61,10 @@
                     android:required="false" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- App Link sample -->
-            <intent-filter android:autoVerify="true">
+            <!-- YouTube link handling. autoVerify is intentionally omitted: the
+                 app cannot verify youtube.com/youtu.be (not its domains), and
+                 autoVerify failure prevents it from being offered as a handler. -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -80,9 +82,18 @@
                     android:host="m.youtube.com"
                     android:pathPrefix="/watch"
                     android:scheme="https" />
+            </intent-filter>
+            <!-- Short links have no /watch path. Keep this in a separate
+                 filter so Android does not merge the /watch path constraint
+                 into the youtu.be authority. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="youtu.be"
-                    android:pathPrefix="/watch"
                     android:scheme="https" />
             </intent-filter>
             <!--TODO: Add this filter, if you want to support sharing text into your app-->
