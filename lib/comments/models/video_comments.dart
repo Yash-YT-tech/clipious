@@ -14,8 +14,11 @@ class VideoComments {
   VideoComments(
       this.commentCount, this.videoId, this.continuation, this.comments);
 
-  factory VideoComments.fromJson(Map<String, dynamic> json) =>
-      _$VideoCommentsFromJson(json);
+  factory VideoComments.fromJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    normalized['comments'] ??= <dynamic>[];
+    return _$VideoCommentsFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$VideoCommentsToJson(this);
 }

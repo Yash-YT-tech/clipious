@@ -35,8 +35,21 @@ class Comment {
       this.creatorHeart,
       this.replies);
 
-  factory Comment.fromJson(Map<String, dynamic> json) =>
-      _$CommentFromJson(json);
+  factory Comment.fromJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    final singleThumbnail = normalized['authorThumbnail'];
+    final thumbnails = normalized['authorThumbnails'];
+    if ((thumbnails == null || (thumbnails is List && thumbnails.isEmpty)) &&
+        singleThumbnail is String &&
+        singleThumbnail.isNotEmpty) {
+      normalized['authorThumbnails'] = [
+        {'url': singleThumbnail, 'width': 0, 'height': 0}
+      ];
+    } else {
+      normalized['authorThumbnails'] ??= <dynamic>[];
+    }
+    return _$CommentFromJson(normalized);
+  }
 
   Map<String, dynamic> toJson() => _$CommentToJson(this);
 }
