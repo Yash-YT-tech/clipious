@@ -113,6 +113,8 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `8622df1` docs: add research, audit, repair and device-handover documentation
 - `1fb7aa1` fix(player): keep proxy-mode HLS/DASH segments on the instance
 - `aed4e97` docs: record final APK hash, proxy DASH behavior and test counts
+- `9a2f145` docs: record the final documentation commit hash
+- `f065ec1` docs: mark plan milestones complete and correct artifact wording
 
 ## Next actions (owner)
 
