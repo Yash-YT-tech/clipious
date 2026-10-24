@@ -270,7 +270,12 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
 
         final formatStreams = newState.video!.formatStreams ?? [];
         final dashUrl = newState.video!.dashUrl;
-        final useDash = isUsingDash() && dashUrl != null && dashUrl.isNotEmpty;
+        final hasDash = dashUrl != null && dashUrl.isNotEmpty;
+        // Live streams often expose only a DASH manifest (no HLS and no
+        // progressive streams). Fall back to DASH even when the user disabled
+        // it, otherwise there is no playable source at all.
+        final useDash =
+            hasDash && (isUsingDash() || (!isHls && formatStreams.isEmpty));
 
         final formatStream = (!isHls && !useDash && formatStreams.isNotEmpty)
             ? formatStreams.last
@@ -282,7 +287,7 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
         if (isHls) {
           rawVideoUrl = useProxy ? addLocalProxyParameter(hlsUrl) : hlsUrl;
         } else if (useDash) {
-          rawVideoUrl = useProxy ? addLocalProxyParameter(dashUrl) : dashUrl;
+          rawVideoUrl = useProxy ? addLocalProxyParameter(dashUrl!) : dashUrl;
         } else {
           rawVideoUrl = formatStream?.url;
         }
@@ -290,6 +295,8 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
         if (rawVideoUrl == null || rawVideoUrl.isEmpty) {
           log.severe(
               'No playable stream found for video ${newState.video!.videoId}');
+          // Do not leave the previous video playing behind an error state.
+          disposeControllers();
           player.setEvent(const MediaEvent(state: MediaState.error));
           return;
         }
