@@ -207,3 +207,60 @@ Accessed 2026-10-24 unless stated otherwise.
 5. Flutter releases manifest — <https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json>.
 6. Android notification permission — <https://developer.android.com/develop/ui/views/notifications/notification-permission>.
 7. Live instance `http://localhost:5566` (stats, search, videos, channels, comments, auth).
+
+## 10. Android automation tooling (2026-10-24)
+
+### scrcpy
+
+- Source: <https://github.com/genymobile/scrcpy> (only official release source).
+- Version: **5.0.1**, official Linux x86_64 static build
+  `scrcpy-linux-x86_64-v5.0.1.tar.gz`.
+- SHA-256 verified against the official `SHA256SUMS.txt`:
+  `9f969d30cc574816077edecda65719c1c70b0aee1df1ba5fa00779ac07b8fd6e` — **OK**.
+- Installed locally at `.tooling/scrcpy/scrcpy` (44 MB with its bundled `adb`,
+  `scrcpy-server`, SDL 3.4.18 and libavcodec). `scrcpy --version` runs successfully.
+- Capabilities: screen mirroring, keyboard/mouse/input injection, audio forwarding (Android
+  11+), recording, virtual display, screen-off mirroring. It installs **nothing permanent**
+  on the device; it pushes a temporary server while running.
+- Requirement: USB debugging authorized on the device.
+
+### Artemis (google/artemis)
+
+- Source: <https://github.com/google/artemis>, Apache-2.0.
+- It is **not** a simple device controller. It is a Python 3.12+ autonomous agent
+  (LangGraph/LangChain, FastAPI, MCP) that perceives screenshots/UI hierarchies and asks a
+  **cloud vision model** (Gemini / OpenAI / Anthropic / OpenRouter / xAI) what to do.
+- Requirements: Python 3.12+ (host has 3.12.3), `uv` (present), an API key for at least one
+  provider, and network access. Dependencies include `opencv-python`, `langchain-*`,
+  `google-genai`, `uiautomator2`, and `fastapi`.
+- Default behaviour installs an **Artemis Accessibility Helper** on the device
+  (`ARTEMIS_HELPER_AUTO_INSTALL=true`). This can be disabled with
+  `ARTEMIS_HELPER_AUTO_INSTALL=false`; `ARTEMIS_HIERARCHY_BACKEND=uiautomator` uses the
+  UIAutomator hierarchy instead (which may install a temporary UIAutomator2 server APK).
+- The default model preset is a Gemini Flash model plus a specialized Gemini ER model for
+  coordinate grounding. The configuration is in `config/artemis.jsonc`; credentials go in
+  `.env`.
+- **Privacy implication:** using Artemis sends screenshots and UI text from the tablet to the
+  chosen model provider. That is incompatible with "do not touch personal data" unless the
+  screen is restricted to the test app and the owner explicitly consents to cloud inference.
+- Setup performed locally: repository cloned to `.tooling/artemis` (59 MB), dependency
+  installation under `.tooling/artemis/.venv` with `UV_CACHE_DIR` inside `.caches/uv`.
+  **No Artemis task has been run** and no API key or `.env` secret was created.
+
+### Current device state
+
+- Tablet serial `HA1D09AS` is visible via adb but **unauthorized**
+  (`adb devices` shows `unauthorized`). Testing cannot start until the owner accepts the
+  USB-debugging prompt on the tablet.
+
+### Chosen automation approach
+
+1. **Deterministic first:** `adb shell input`, `uiautomator dump`, `adb exec-out screencap`,
+   and `scrcpy --no-audio --record=…` for reproducible tests without cloud inference.
+2. **Artemis optional:** staged locally, helper auto-install disabled, no keys. It will only
+   be used if the owner provides a provider key and accepts screenshot uploads.
+3. **Privacy boundary:** keep Clipious in the foreground, do not open other apps, do not
+   pull personal files, do not log in to the Invidious account during automated UI tests.
+
+Sources: scrcpy README/`doc/linux.md` and release `SHA256SUMS.txt`; Artemis `README.md`,
+`pyproject.toml`, `.env.example`, `config/artemis.jsonc`, `start.sh`. Accessed 2026-10-24.
