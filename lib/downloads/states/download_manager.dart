@@ -11,6 +11,7 @@ import 'package:clipious/downloads/models/downloaded_video.dart';
 import 'package:clipious/extensions.dart';
 import 'package:clipious/globals.dart';
 import 'package:clipious/utils/models/image_object.dart';
+import 'package:clipious/utils/url_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -145,14 +146,16 @@ class DownloadManagerCubit extends Cubit<DownloadManagerState> {
             element.qualityLabel == quality &&
             element.type.contains('video/webm'));
 
-        videoUrl = stream.url;
+        videoUrl = resolveInstanceUrl(server.url, stream.url);
       }
       AdaptiveFormat audio = vid.adaptiveFormats!
           .sortByReversed((e) => int.parse(e.bitrate ?? "0"))
           .firstWhere((element) => element.type.contains("audio/webm"));
-      String audioUrl = audio.url;
+      String audioUrl = resolveInstanceUrl(server.url, audio.url);
 
-      Dio dio = Dio();
+      Dio dio = Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 60)));
       CancelToken cancelToken = CancelToken();
 
       var progresses =
@@ -162,9 +165,11 @@ class DownloadManagerCubit extends Cubit<DownloadManagerState> {
 
       setVideos();
       // download thumbnail
-      String? thumbUrl = ImageObject.getBestThumbnail(vid.videoThumbnails)?.url;
-      log.fine(thumbUrl);
-      if (thumbUrl != null) {
+      final rawThumbUrl =
+          ImageObject.getBestThumbnail(vid.videoThumbnails)?.url;
+      log.fine(rawThumbUrl);
+      if (rawThumbUrl != null) {
+        final thumbUrl = resolveInstanceUrl(server.url, rawThumbUrl);
         //download thumbnail
         var thumbnailPath = await downloadedVideo.thumbnailPath;
         log.fine("Downloading thumbnail to: $thumbnailPath");
