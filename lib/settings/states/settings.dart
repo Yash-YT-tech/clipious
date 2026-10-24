@@ -47,6 +47,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   onReady() async {
     await getPackageInfo();
+    await fileDb.syncWithDb();
     await _getSubscriptionNotification();
   }
 

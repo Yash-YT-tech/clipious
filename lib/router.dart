@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clipious/app/views/screens/main.dart';
 import 'package:clipious/app/views/tv/screens/tv_home.dart';
@@ -262,11 +263,17 @@ class AppRouter extends RootStackRouter {
 }
 
 class MyRouteObserver extends AutoRouterObserver {
+  void _clearTextInput() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+  }
+
   @override
   void didPush(Route route, Route? previousRoute) {
     log.fine(
         'New route pushed: ${route.settings.name}, ${route.runtimeType}, previous route: ${previousRoute?.settings.name}, ${previousRoute.runtimeType}');
     log.fine('current route: ${appRouter.current.name}');
+    _clearTextInput();
     if (route.settings.name != null) {
       route.navigator?.context.read<PlayerCubit>().showMiniPlayer();
     }
@@ -278,6 +285,7 @@ class MyRouteObserver extends AutoRouterObserver {
     log.fine(
         'New route popped: ${route.settings.name}, ${route.runtimeType}, previous route: ${previousRoute?.settings.name}, ${previousRoute.runtimeType}');
     log.fine('current route: ${appRouter.current.name}');
+    _clearTextInput();
     super.didPop(route, previousRoute);
   }
 

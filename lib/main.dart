@@ -69,12 +69,12 @@ Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  packageInfo = await PackageInfo.fromPlatform();
+  final packageInfoFuture = PackageInfo.fromPlatform();
+  final databaseFuture = SembastSqfDb.create();
+  packageInfo = await packageInfoFuture;
+  db = await databaseFuture;
 
-  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  db = await SembastSqfDb.create();
-  await fileDb.syncWithDb();
-
+  final isTvFuture = isDeviceTv();
   late final bool hasServer;
   try {
     await db.getCurrentlySelectedServer();
@@ -82,18 +82,16 @@ Future<void> main() async {
   } catch (err) {
     hasServer = false;
   }
+  isTv = await isTvFuture;
   appRouter = AppRouter(hasServer: hasServer);
 
-  initializeNotifications();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    initializeNotifications();
+    FlutterDisplayMode.setHighRefreshRate().catchError((err) {
+      log.severe("failed to set high refresh mode", err);
+    });
+  });
 
-  try {
-    log.fine("Forcing refresh rate");
-    await FlutterDisplayMode.setHighRefreshRate();
-  } catch (err) {
-    log.severe("failed to set high refresh mode", err);
-  }
-
-  isTv = await isDeviceTv();
   runApp(BetterFeedback(
     child: MultiBlocProvider(providers: [
       BlocProvider(

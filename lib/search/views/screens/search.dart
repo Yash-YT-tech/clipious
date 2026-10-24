@@ -14,11 +14,37 @@ import '../../states/search.dart';
 const searchPageSize = 20;
 
 @RoutePage()
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   final String? query;
   final bool? searchNow;
 
   const SearchScreen({super.key, this.query, this.searchNow});
+
+  @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  final FocusNode _searchFocus = FocusNode();
+  bool _requestedInitialFocus = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _requestedInitialFocus || widget.query != null) {
+        return;
+      }
+      _requestedInitialFocus = true;
+      _searchFocus.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +56,9 @@ class SearchScreen extends StatelessWidget {
         final deviceOrientation = getOrientation();
         return BlocProvider(
           create: (context) => SearchCubit<SearchState>(
-              SearchState.init(query: query, searchNow: searchNow), settings),
+              SearchState.init(
+                  query: widget.query, searchNow: widget.searchNow),
+              settings),
           child: BlocBuilder<SearchCubit, SearchState>(
             builder: (context, state) {
               var cubit = context.read<SearchCubit>();
@@ -65,7 +93,7 @@ class SearchScreen extends StatelessWidget {
                               : null,
                       appBar: AppBar(
                         title: TextField(
-                          autofocus: query == null,
+                          focusNode: _searchFocus,
                           controller: state.queryController,
                           textInputAction: TextInputAction.search,
                           onSubmitted: cubit.search,
