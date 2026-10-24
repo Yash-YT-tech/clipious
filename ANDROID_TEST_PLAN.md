@@ -27,7 +27,7 @@ Server: `http://192.168.1.4:5566` (LAN) or `http://100.109.64.77:5566` (Tailscal
 
 | Tool | Status | Location / notes |
 |---|---|---|
-| adb | Present | system `adb`, tablet visible but **unauthorized** |
+| adb | Present | system `adb`, tablet **authorized** and tested (`HA1D09AS`) |
 | scrcpy 5.0.1 | Installed & verified (3 s recording) | `.tooling/scrcpy/scrcpy`; SHA-256 OK, bundled SDL3/ffmpeg/server |
 | Artemis | Repository + Python env staged; CLI verified | `.tooling/artemis`; no API key, no tasks run, helper auto-install off |
 | Flutter/Dart | Installed | `.tooling/flutter` (3.35.3 / Dart 3.9.2) |
