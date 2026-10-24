@@ -14,7 +14,11 @@ class AppBarDownloadButton extends StatelessWidget {
     var colors = Theme.of(context).colorScheme;
     var textTheme = Theme.of(context).textTheme;
     return BlocBuilder<DownloadManagerCubit, DownloadManagerState>(
-      // buildWhen: (previous, current) => previous.videos.length != current.videos.length || previous.totalProgress != current.totalProgress,
+      buildWhen: (previous, current) =>
+          previous.videos.length != current.videos.length ||
+          previous.totalProgress != current.totalProgress ||
+          previous.downloadProgresses.isNotEmpty !=
+              current.downloadProgresses.isNotEmpty,
       builder: (context, state) {
         return Stack(
           alignment: Alignment.center,

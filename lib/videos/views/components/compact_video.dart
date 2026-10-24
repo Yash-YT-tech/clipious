@@ -57,16 +57,16 @@ class CompactVideo extends StatelessWidget {
                       bottom: 0,
                       child: AnimatedFractionallySizedBox(
                         alignment: Alignment.centerLeft,
-                        duration: animationDuration * 2,
+                        duration: motionBase,
                         widthFactor: (highlighted ?? false) ? 1 : 0,
-                        curve: Curves.easeInOutQuad,
+                        curve: motionCurveStandard,
                         child: AnimatedContainer(
                           decoration: BoxDecoration(
                               color: (highlighted ?? false)
                                   ? colors.secondaryContainer
                                   : colors.surface,
                               borderRadius: BorderRadius.circular(10)),
-                          duration: animationDuration * 2,
+                          duration: motionBase,
                         ),
                       ),
                     ),

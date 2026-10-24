@@ -241,10 +241,11 @@ class PlayerCubit extends Cubit<PlayerState> with WidgetsBindingObserver {
         state: MediaState.playing,
         type: MediaEventType.miniDisplayChanged,
         value: state.isMini);
+    unawaited(saveProgress(state.position.inSeconds));
     emit(state.copyWith(isClosing: true));
     cancelSleep();
     Future.delayed(
-      animationDuration * 1.5,
+      motionBase * 1.5,
       () {
         emit(state.copyWith(
             isMini: true,
@@ -347,10 +348,15 @@ class PlayerCubit extends Cubit<PlayerState> with WidgetsBindingObserver {
   Future<void> onProgress(Duration? position) async {
     var newPosition = position ?? Duration.zero;
     int currentPosition = newPosition.inSeconds;
-    await saveProgress(currentPosition);
     log.fine("video progress event");
 
     emit(state.copyWith(position: newPosition));
+
+    EasyThrottle.throttle(
+      'save-progress-${state.currentlyPlaying?.videoId ?? state.offlineCurrentlyPlaying?.videoId ?? 'none'}',
+      const Duration(seconds: 5),
+      () => saveProgress(currentPosition),
+    );
 
     // if we're already within the last 5 seconds we don't skip to avoid infinite skip loop on late outro segment
     if (state.sponsorSegments.isNotEmpty &&
@@ -652,6 +658,7 @@ class PlayerCubit extends Cubit<PlayerState> with WidgetsBindingObserver {
   }
 
   void pause() {
+    unawaited(saveProgress(state.position.inSeconds));
     emit(state.copyWith(
         mediaCommand: const MediaCommand(MediaCommandType.pause)));
   }
@@ -703,7 +710,7 @@ class PlayerCubit extends Cubit<PlayerState> with WidgetsBindingObserver {
         state.dragDistance.abs() > 200 ? state.isMini : state.dragStartMini;
     emit(state.copyWith(isDragging: false));
     Future.delayed(
-      animationDuration,
+      motionBase,
       () => emit(state.copyWith(showMiniPlaceholder: false)),
     );
     if (showMini) {

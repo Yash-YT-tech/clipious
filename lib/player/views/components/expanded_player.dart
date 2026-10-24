@@ -5,6 +5,7 @@ import 'package:clipious/globals.dart';
 import 'package:clipious/player/states/interfaces/media_player.dart';
 import 'package:clipious/player/states/player.dart';
 import 'package:clipious/player/views/components/video_queue.dart';
+import 'package:clipious/utils/views/motion.dart';
 
 import '../../../comments/views/components/comments_container.dart';
 import '../../../downloads/models/downloaded_video.dart';
@@ -46,7 +47,7 @@ class ExpandedPlayer extends StatelessWidget {
                 child: Builder(builder: (context) {
                   var selectedIndex = context.select((PlayerCubit value) =>
                       value.state.selectedFullScreenIndex);
-                  return video != null
+                  final content = video != null
                       ? <Widget>[
                           SingleChildScrollView(
                             child: VideoInfo(
@@ -66,6 +67,25 @@ class ExpandedPlayer extends StatelessWidget {
                           const VideoQueue(),
                         ][selectedIndex]
                       : const VideoQueue();
+                  return AnimatedSwitcher(
+                    duration: motionDuration(context, motionShort),
+                    switchInCurve: motionCurveStandard,
+                    switchOutCurve: motionCurveStandard,
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      fit: StackFit.expand,
+                      alignment: Alignment.topLeft,
+                      children: [
+                        ...previousChildren,
+                        if (currentChild != null) currentChild,
+                      ],
+                    ),
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
+                    child: KeyedSubtree(
+                      key: ValueKey('player-tab-$selectedIndex'),
+                      child: content,
+                    ),
+                  );
                 }),
               ),
             ),

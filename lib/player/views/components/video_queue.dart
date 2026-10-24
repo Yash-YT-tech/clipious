@@ -120,8 +120,7 @@ class VideoQueue extends StatelessWidget {
                     return;
                   }
                   scrollController.animateTo(offset,
-                      duration: animationDuration * 4,
-                      curve: Curves.easeInOutQuad);
+                      duration: motionEmphasized, curve: motionCurveStandard);
                 },
                 buildWhen: (previous, current) =>
                     previous.videos != current.videos ||

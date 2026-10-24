@@ -20,6 +20,7 @@ import 'package:clipious/router.dart';
 import 'package:clipious/settings/models/db/settings.dart';
 import 'package:clipious/settings/states/settings.dart';
 import 'package:clipious/utils.dart';
+import 'package:clipious/utils/views/motion.dart';
 import 'package:clipious/utils/sembast_sqflite_database.dart';
 import 'package:clipious/workmanager.dart';
 import 'package:logging/logging.dart';
@@ -28,6 +29,17 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'settings/models/db/app_logs.dart';
 
 const brandColor = Color(0xFF4f0096);
+
+const accessiblePageTransitions = PageTransitionsTheme(
+  builders: <TargetPlatform, PageTransitionsBuilder>{
+    TargetPlatform.android: AccessibleZoomPageTransitionsBuilder(),
+    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.windows: AccessibleZoomPageTransitionsBuilder(),
+    TargetPlatform.linux: AccessibleZoomPageTransitionsBuilder(),
+    TargetPlatform.fuchsia: AccessibleZoomPageTransitionsBuilder(),
+  },
+);
 
 final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 bool isTv = false;
@@ -255,6 +267,7 @@ class MyApp extends StatelessWidget {
               theme: ThemeData(
                   useMaterial3: true,
                   colorScheme: lightColorScheme,
+                  pageTransitionsTheme: accessiblePageTransitions,
                   navigationBarTheme: navigationBarTheme,
                   navigationRailTheme: navigationRailTheme,
                   appBarTheme: appBarTheme,
@@ -266,6 +279,7 @@ class MyApp extends StatelessWidget {
               darkTheme: ThemeData(
                   useMaterial3: true,
                   colorScheme: darkColorScheme,
+                  pageTransitionsTheme: accessiblePageTransitions,
                   appBarTheme: appBarTheme,
                   navigationBarTheme: navigationBarTheme,
                   navigationRailTheme: navigationRailTheme,

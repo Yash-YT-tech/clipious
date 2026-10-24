@@ -110,15 +110,15 @@ class Player extends StatelessWidget {
                   : isMini && isDragging && top != null
                       ? maxHeight - top - targetHeight
                       : cubit.getBottom,
-          duration: isDragging ? Duration.zero : animationDuration,
-          curve: Curves.easeInOutQuad,
+          duration: isDragging ? Duration.zero : motionBase,
+          curve: motionCurveStandard,
           child: AnimatedOpacity(
-            duration: animationDuration,
+            duration: isDragging ? Duration.zero : motionBase,
             opacity: isClosing ? 0 : 1,
             child: AnimatedScale(
               scale: (isMini && isDragging) ? 0.8 : 1,
-              duration: animationDuration,
-              curve: Curves.easeInOutQuad,
+              duration: isDragging ? Duration.zero : motionBase,
+              curve: motionCurveStandard,
               child: Material(
                 elevation: 0,
                 child: showPlayer
@@ -129,7 +129,7 @@ class Player extends StatelessWidget {
                           left: !isFullScreen,
                           right: !isFullScreen,
                           child: AnimatedContainer(
-                            duration: animationDuration,
+                            duration: isDragging ? Duration.zero : motionBase,
                             color: colors.surface,
                             padding: EdgeInsets.symmetric(
                                 horizontal: isMini && !isDragging ? 7 : 0),
@@ -138,7 +138,8 @@ class Player extends StatelessWidget {
                                   ? BorderRadius.circular(10)
                                   : BorderRadius.circular(0),
                               child: AnimatedContainer(
-                                duration: animationDuration,
+                                duration:
+                                    isDragging ? Duration.zero : motionBase,
                                 decoration: BoxDecoration(
                                   color: isFullScreen
                                       ? Colors.black
@@ -191,7 +192,9 @@ class Player extends StatelessWidget {
                                                   ? targetHeight
                                                   : 500,
                                         ),
-                                        duration: animationDuration,
+                                        duration: isDragging
+                                            ? Duration.zero
+                                            : motionBase,
                                         child: Row(
                                           mainAxisAlignment: isMini
                                               ? MainAxisAlignment.spaceBetween

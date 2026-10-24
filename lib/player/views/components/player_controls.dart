@@ -7,6 +7,7 @@ import 'package:clipious/player/states/player.dart';
 import 'package:clipious/player/views/components/sleep_timer.dart';
 import 'package:clipious/player/views/components/system_setting_slider.dart';
 import 'package:clipious/settings/states/settings.dart';
+import 'package:clipious/utils/views/motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -293,6 +294,10 @@ class PlayerControls extends StatelessWidget {
 
             var cubit = context.read<PlayerControlsCubit>();
 
+            final showProgress = (playerState.displayControls ||
+                    playerState.justDoubleTappedSkip) &&
+                !(currentlyPlaying?.liveNow ?? false);
+
             late final MediaPlayerCubit mediaPlayer;
             if (mediaPlayerCubit != null) {
               mediaPlayer = mediaPlayerCubit!;
@@ -381,16 +386,16 @@ class PlayerControls extends StatelessWidget {
                             )
                                 .animate()
                                 .slideX(
-                                    duration: animationDuration,
-                                    curve: Curves.easeInOutQuad)
-                                .fadeIn(duration: animationDuration)
+                                    duration: motionShort,
+                                    curve: motionCurveStandard)
+                                .fadeIn(duration: motionShort)
                                 .fadeOut(
                                     delay: const Duration(seconds: 1),
-                                    duration: animationDuration)
+                                    duration: motionShort)
                                 .slideX(
                                     end: -0.5,
-                                    duration: animationDuration,
-                                    curve: Curves.easeInOutQuad,
+                                    duration: motionShort,
+                                    curve: motionCurveStandard,
                                     delay: const Duration(seconds: 1))),
                       if (!isMini && !isPip)
                         Positioned(
@@ -398,8 +403,15 @@ class PlayerControls extends StatelessWidget {
                           left: 12,
                           child: ValueListenableBuilder<bool>(
                             valueListenable: cubit.holdingSpeed,
-                            builder: (context, holding, child) => holding
-                                ? Container(
+                            builder: (context, holding, child) => IgnorePointer(
+                              child: AnimatedOpacity(
+                                opacity: holding ? 1 : 0,
+                                duration: motionDuration(context, motionFast),
+                                child: AnimatedScale(
+                                  scale: holding ? 1 : 0.92,
+                                  duration: motionDuration(context, motionFast),
+                                  curve: motionCurveStandard,
+                                  child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
@@ -419,8 +431,10 @@ class PlayerControls extends StatelessWidget {
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
-                                  )
-                                : const SizedBox.shrink(),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       if (!isMini && !isPip)
@@ -520,168 +534,210 @@ class PlayerControls extends StatelessWidget {
                         top: 0,
                         child: isMini || isPip
                             ? const SizedBox.shrink()
-                            : playerState.displayControls
-                                ? GestureDetector(
-                                    onTap: cubit.hideControls,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(0),
-                                          color: Colors.black
-                                              .withValues(alpha: 0.4)),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              if (playerState.fullScreenState ==
-                                                  FullScreenState.fullScreen)
-                                                Expanded(
-                                                    child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 8.0),
-                                                  child: Text(
-                                                    videoTitle,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: textTheme.bodyMedium
-                                                        ?.copyWith(
-                                                            color: Colors.white
-                                                                .withValues(
-                                                                    alpha:
-                                                                        0.8)),
-                                                  ),
-                                                )),
-                                              IconButton(
-                                                  onPressed: () =>
-                                                      player.enterPip(),
-                                                  icon: const Icon(Icons
-                                                      .picture_in_picture)),
-                                              IconButton(
-                                                  onPressed: () =>
-                                                      showOptionMenu(
-                                                          context, playerState),
-                                                  icon: const Icon(
-                                                      Icons.more_vert))
-                                            ],
+                            : IgnorePointer(
+                                ignoring: !playerState.displayControls,
+                                child: AnimatedSwitcher(
+                                  duration:
+                                      motionDuration(context, motionShort),
+                                  switchInCurve: motionCurveDecelerate,
+                                  switchOutCurve: motionCurveAccelerate,
+                                  child: playerState.displayControls
+                                      ? GestureDetector(
+                                          key:
+                                              const ValueKey('player-controls'),
+                                          onTap: cubit.hideControls,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(0),
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.4)),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    if (playerState
+                                                            .fullScreenState ==
+                                                        FullScreenState
+                                                            .fullScreen)
+                                                      Expanded(
+                                                          child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 8.0),
+                                                        child: Text(
+                                                          videoTitle,
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: textTheme
+                                                              .bodyMedium
+                                                              ?.copyWith(
+                                                                  color: Colors
+                                                                      .white
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.8)),
+                                                        ),
+                                                      )),
+                                                    IconButton(
+                                                        onPressed: () =>
+                                                            player.enterPip(),
+                                                        icon: const Icon(Icons
+                                                            .picture_in_picture)),
+                                                    IconButton(
+                                                        onPressed: () =>
+                                                            showOptionMenu(
+                                                                context,
+                                                                playerState),
+                                                        icon: const Icon(
+                                                            Icons.more_vert))
+                                                  ],
+                                                ),
+                                                Expanded(child: Container()),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    playerState.muted
+                                                        ? IconButton(
+                                                            onPressed: () {
+                                                              player.setMuted(
+                                                                  false);
+                                                              cubit
+                                                                  .hideControlsDebounce();
+                                                            },
+                                                            icon: const Icon(
+                                                                Icons
+                                                                    .volume_off))
+                                                        : IconButton(
+                                                            onPressed: () {
+                                                              player.setMuted(
+                                                                  true);
+                                                              cubit
+                                                                  .hideControlsDebounce();
+                                                            },
+                                                            icon: const Icon(
+                                                                Icons
+                                                                    .volume_up)),
+                                                    switch (playerState
+                                                        .fullScreenState) {
+                                                      FullScreenState
+                                                            .fullScreen =>
+                                                        IconButton(
+                                                            onPressed: () => player
+                                                                .setFullScreen(
+                                                                    FullScreenState
+                                                                        .notFullScreen),
+                                                            icon: const Icon(Icons
+                                                                .fullscreen_exit)),
+                                                      FullScreenState
+                                                            .notFullScreen =>
+                                                        IconButton(
+                                                            onPressed: () => player
+                                                                .setFullScreen(
+                                                                    FullScreenState
+                                                                        .fullScreen),
+                                                            icon: const Icon(Icons
+                                                                .fullscreen)),
+                                                    }
+                                                  ],
+                                                ),
+                                                const SizedBox(
+                                                  height: 15,
+                                                )
+                                              ],
+                                            ),
                                           ),
-                                          Expanded(child: Container()),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              playerState.muted
-                                                  ? IconButton(
-                                                      onPressed: () {
-                                                        player.setMuted(false);
-                                                        cubit
-                                                            .hideControlsDebounce();
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.volume_off))
-                                                  : IconButton(
-                                                      onPressed: () {
-                                                        player.setMuted(true);
-                                                        cubit
-                                                            .hideControlsDebounce();
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.volume_up)),
-                                              switch (
-                                                  playerState.fullScreenState) {
-                                                FullScreenState.fullScreen =>
-                                                  IconButton(
-                                                      onPressed: () =>
-                                                          player.setFullScreen(
-                                                              FullScreenState
-                                                                  .notFullScreen),
-                                                      icon: const Icon(Icons
-                                                          .fullscreen_exit)),
-                                                FullScreenState.notFullScreen =>
-                                                  IconButton(
-                                                      onPressed: () =>
-                                                          player.setFullScreen(
-                                                              FullScreenState
-                                                                  .fullScreen),
-                                                      icon: const Icon(
-                                                          Icons.fullscreen)),
-                                              }
-                                            ],
-                                          ),
-                                          const SizedBox(
-                                            height: 15,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                : const SizedBox.expand(),
-                      ),
-                      if ((playerState.displayControls ||
-                              playerState.justDoubleTappedSkip) &&
-                          !(currentlyPlaying?.liveNow ?? false))
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Stack(
-                            children: [
-                              Container(
-                                decoration: playerState.justDoubleTappedSkip
-                                    ? BoxDecoration(
-                                        gradient: LinearGradient(
-                                            begin: Alignment.bottomCenter,
-                                            end: Alignment.topCenter,
-                                            colors: [
-                                            Colors.black.withValues(alpha: 1),
-                                            Colors.black.withValues(alpha: 0)
-                                          ]))
-                                    : null,
-                                child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 16.0, right: 8),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: SizedBox(
-                                              height: 25,
-                                              child: Slider(
-                                                min: 0,
-                                                value: min(
-                                                    playerState
-                                                        .position.inMilliseconds
-                                                        .toDouble(),
-                                                    playerState
-                                                        .duration.inMilliseconds
-                                                        .toDouble()),
-                                                max: playerState
-                                                    .duration.inMilliseconds
-                                                    .toDouble(),
-                                                secondaryTrackValue: min(
-                                                    playerState
-                                                        .buffer.inMilliseconds
-                                                        .toDouble(),
-                                                    playerState
-                                                        .duration.inMilliseconds
-                                                        .toDouble()),
-                                                onChangeEnd: cubit.onScrubbed,
-                                                onChanged: cubit.onScrubDrag,
-                                              )),
-                                        ),
-                                        Text(
-                                          '${prettyDurationCustom(playerState.position)} / ${prettyDurationCustom(playerState.duration)}',
-                                          style: textTheme.bodySmall
-                                              ?.copyWith(color: Colors.white),
-                                        ),
-                                      ],
-                                    )),
+                                        )
+                                      : const SizedBox.expand(
+                                          key: ValueKey(
+                                              'player-controls-hidden')),
+                                ),
                               ),
-                            ],
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: IgnorePointer(
+                          ignoring: !showProgress,
+                          child: AnimatedSwitcher(
+                            duration: motionDuration(context, motionShort),
+                            switchInCurve: motionCurveDecelerate,
+                            switchOutCurve: motionCurveAccelerate,
+                            child: showProgress
+                                ? Stack(
+                                    key: const ValueKey('player-progress'),
+                                    children: [
+                                      Container(
+                                        decoration: playerState
+                                                .justDoubleTappedSkip
+                                            ? BoxDecoration(
+                                                gradient: LinearGradient(
+                                                    begin:
+                                                        Alignment.bottomCenter,
+                                                    end: Alignment.topCenter,
+                                                    colors: [
+                                                    Colors.black
+                                                        .withValues(alpha: 1),
+                                                    Colors.black
+                                                        .withValues(alpha: 0)
+                                                  ]))
+                                            : null,
+                                        child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 16.0, right: 8),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: SizedBox(
+                                                      height: 25,
+                                                      child: Slider(
+                                                        min: 0,
+                                                        value: min(
+                                                            playerState.position
+                                                                .inMilliseconds
+                                                                .toDouble(),
+                                                            playerState.duration
+                                                                .inMilliseconds
+                                                                .toDouble()),
+                                                        max: playerState
+                                                            .duration
+                                                            .inMilliseconds
+                                                            .toDouble(),
+                                                        secondaryTrackValue: min(
+                                                            playerState.buffer
+                                                                .inMilliseconds
+                                                                .toDouble(),
+                                                            playerState.duration
+                                                                .inMilliseconds
+                                                                .toDouble()),
+                                                        onChangeEnd:
+                                                            cubit.onScrubbed,
+                                                        onChanged:
+                                                            cubit.onScrubDrag,
+                                                      )),
+                                                ),
+                                                Text(
+                                                  '${prettyDurationCustom(playerState.position)} / ${prettyDurationCustom(playerState.duration)}',
+                                                  style: textTheme.bodySmall
+                                                      ?.copyWith(
+                                                          color: Colors.white),
+                                                ),
+                                              ],
+                                            )),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink(
+                                    key: ValueKey('player-progress-hidden')),
                           ),
                         ),
+                      ),
                       if (!isMini && !isPip && playerState.displayControls)
                         Positioned(
                           top: 0,
@@ -768,21 +824,20 @@ class PlayerControls extends StatelessWidget {
                                   : Icons.bedtime_off_outlined))
                           .animate(target: hasTimer ? 1 : 0)
                           .fadeIn(
-                              duration: animationDuration,
-                              curve: animationCurve)
+                              duration: motionShort, curve: motionCurveStandard)
                           .slideY(
-                              duration: animationDuration,
-                              curve: animationCurve,
+                              duration: motionShort,
+                              curve: motionCurveStandard,
                               begin: 2,
                               end: 0)
                           .fadeOut(
                               delay: const Duration(seconds: 3),
-                              duration: animationDuration,
-                              curve: animationCurve)
+                              duration: motionShort,
+                              curve: motionCurveStandard)
                           .slideY(
                               delay: const Duration(seconds: 3),
-                              duration: animationDuration,
-                              curve: animationCurve,
+                              duration: motionShort,
+                              curve: motionCurveStandard,
                               begin: 0,
                               end: 2),
 
@@ -799,13 +854,13 @@ class PlayerControls extends StatelessWidget {
                           .slideX(
                               begin: 2,
                               end: 0,
-                              duration: animationDuration ~/ 2,
-                              curve: animationCurve)
+                              duration: motionFast,
+                              curve: motionCurveStandard)
                           .fade(
                               begin: 0,
                               end: 1,
-                              duration: animationDuration * 0.75,
-                              curve: animationCurve),
+                              duration: motionShort,
+                              curve: motionCurveStandard),
                       Positioned(
                               top: constraints.maxHeight * 0.15,
                               bottom: constraints.maxHeight * 0.15,
@@ -819,13 +874,13 @@ class PlayerControls extends StatelessWidget {
                           .slideX(
                               begin: -2,
                               end: 0,
-                              duration: animationDuration ~/ 2,
-                              curve: animationCurve)
+                              duration: motionFast,
+                              curve: motionCurveStandard)
                           .fade(
                               begin: 0,
                               end: 1,
-                              duration: animationDuration * 0.75,
-                              curve: animationCurve),
+                              duration: motionShort,
+                              curve: motionCurveStandard),
                     ],
                   ),
                 ),
@@ -853,16 +908,16 @@ class DoubleTapButton extends StatelessWidget {
   Widget build(BuildContext context) {
     var textTheme = Theme.of(context).textTheme;
     return AnimatedContainer(
-      curve: Curves.easeInOutQuad,
+      curve: motionCurveStandard,
       margin: EdgeInsets.all(opacity == 1 ? 50 : 0),
       decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: opacity == 1 ? 0.3 : 0),
           shape: BoxShape.circle),
-      duration: const Duration(milliseconds: 150),
+      duration: motionShort,
       height: double.infinity,
       child: AnimatedOpacity(
         opacity: opacity,
-        duration: Duration(milliseconds: opacity == 1 ? 150 : 500),
+        duration: opacity == 1 ? motionShort : motionBase,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

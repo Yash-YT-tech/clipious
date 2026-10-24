@@ -15,10 +15,10 @@ class PlayerPlaceHolder extends StatelessWidget {
             value.state.showMiniPlaceholder && value.state.isMini);
         return AnimatedOpacity(
           opacity: showPlaceHolder ? 1 : 0,
-          duration: animationDuration,
+          duration: motionBase,
           child: AnimatedContainer(
-              duration: animationDuration,
-              curve: Curves.easeInOut,
+              duration: motionBase,
+              curve: motionCurveStandard,
               height: showPlaceHolder ? targetHeight : 0,
               color: colors.surface,
               padding: const EdgeInsets.symmetric(horizontal: 7),
@@ -29,7 +29,7 @@ class PlayerPlaceHolder extends StatelessWidget {
                 ),
                 child: Center(
                   child: AnimatedOpacity(
-                      duration: animationDuration * 4,
+                      duration: motionPage,
                       opacity: showPlaceHolder ? 1 : 0,
                       child: Icon(
                         Icons.play_arrow_outlined,

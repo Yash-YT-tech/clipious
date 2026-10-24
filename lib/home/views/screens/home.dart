@@ -88,9 +88,10 @@ class _MainScreenState extends State<MainContentScreen> {
       return previous.server != current.server;
     }, builder: (context, appState) {
       var app = context.read<AppCubit>();
-      var settings = context.watch<SettingsCubit>().state;
+      final appLayout =
+          context.select((SettingsCubit settings) => settings.state.appLayout);
 
-      var allowedPages = settings.appLayout
+      var allowedPages = appLayout
           .where((element) =>
               element.isPermitted(context, app.isLoggedIn) &&
               element.route != null)

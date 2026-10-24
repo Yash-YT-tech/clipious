@@ -229,6 +229,8 @@ class VideoScreen extends StatelessWidget {
                               distractionFreeMode
                           ? null
                           : FadeIn(
+                              duration: motionShort,
+                              curve: motionCurveStandard,
                               child: NavigationBar(
                                 onDestinationSelected:
                                     tabsRouter.setActiveIndex,

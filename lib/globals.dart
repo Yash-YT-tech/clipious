@@ -20,8 +20,21 @@ const youtubeHosts = [
   'youtu.be'
 ];
 
-const animationDuration = Duration(milliseconds: 250);
-const animationCurve = Curves.easeInOutQuad;
+const motionFast = Duration(milliseconds: 100);
+const motionShort = Duration(milliseconds: 150);
+const motionBase = Duration(milliseconds: 200);
+const motionMedium = Duration(milliseconds: 250);
+const motionPage = Duration(milliseconds: 300);
+const motionEmphasized = Duration(milliseconds: 350);
+const motionLong = Duration(milliseconds: 500);
+const motionSkeleton = Duration(milliseconds: 1500);
+
+const motionCurveStandard = Cubic(0.2, 0, 0, 1);
+const motionCurveDecelerate = Cubic(0, 0, 0, 1);
+const motionCurveAccelerate = Cubic(0.3, 0, 1, 1);
+
+const animationDuration = motionMedium;
+const animationCurve = motionCurveStandard;
 
 Service service = Service();
 

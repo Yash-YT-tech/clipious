@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:clipious/l10n/generated/app_localizations.dart';
 import 'package:clipious/app/states/app.dart';
 import 'package:clipious/globals.dart';
+import 'package:clipious/utils/views/motion.dart';
 import 'package:clipious/home/models/db/home_layout.dart';
 import 'package:clipious/home/states/home.dart';
 import 'package:clipious/router.dart';
@@ -74,7 +75,12 @@ class HomeView extends StatelessWidget {
                 (notificationInfo.metrics.axisDirection == AxisDirection.down ||
                     notificationInfo.metrics.axisDirection ==
                         AxisDirection.up)) {
-              home.setScroll(notificationInfo.metrics.pixels > 100);
+              final pixels = notificationInfo.metrics.pixels;
+              if (!home.state && pixels > 100) {
+                home.setScroll(true);
+              } else if (home.state && pixels < 80) {
+                home.setScroll(false);
+              }
             }
             return true;
           },
@@ -96,10 +102,10 @@ class HomeView extends StatelessWidget {
                           crossFadeState: scrolled
                               ? CrossFadeState.showSecond
                               : CrossFadeState.showFirst,
-                          firstCurve: Curves.easeInOutQuad,
-                          secondCurve: Curves.easeInOutQuad,
-                          sizeCurve: Curves.easeInOutQuad,
-                          duration: animationDuration,
+                          firstCurve: motionCurveStandard,
+                          secondCurve: motionCurveStandard,
+                          sizeCurve: motionCurveStandard,
+                          duration: motionDuration(context, motionShort),
                           firstChild: Column(
                               mainAxisSize: MainAxisSize.min,
                               children:

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_fadein/flutter_fadein.dart';
+import 'package:clipious/globals.dart';
 import 'package:clipious/l10n/generated/app_localizations.dart';
 import 'package:clipious/channels/states/channel.dart';
 import 'package:clipious/router.dart';
@@ -67,6 +68,8 @@ class ChannelScreen extends StatelessWidget {
                             channelState.loading
                         ? null
                         : FadeIn(
+                            duration: motionShort,
+                            curve: motionCurveStandard,
                             child: NavigationBar(
                               onDestinationSelected: tabsRouter.setActiveIndex,
                               selectedIndex: tabsRouter.activeIndex,

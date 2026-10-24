@@ -96,29 +96,41 @@ class VideoList<T extends IdedVideo> extends StatelessWidget {
                                 !small && state.itemList.hasRefresh()
                                     ? await cubit.refreshItems()
                                     : Future.delayed(Duration.zero),
-                            child: GridView.count(
-                              crossAxisCount: gridCount,
+                            child: GridView.builder(
                               controller: cubit.scrollController,
                               scrollDirection: scrollDirection,
-                              crossAxisSpacing: small ? 8 : 5,
-                              mainAxisSpacing: small ? 8 : 5,
-                              childAspectRatio: small
-                                  ? smallVideoAspectRatio
-                                  : getGridAspectRatio(context),
-                              children: [
-                                ...items.map((v) {
-                                  Video? onlineVideo;
-                                  DownloadedVideo? offlineVideo;
+                              cacheExtent: 400,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: gridCount,
+                                crossAxisSpacing: small ? 8 : 5,
+                                mainAxisSpacing: small ? 8 : 5,
+                                childAspectRatio: small
+                                    ? smallVideoAspectRatio
+                                    : getGridAspectRatio(context),
+                              ),
+                              itemCount: items.length +
+                                  (state.loading ? 5 * gridCount : 0),
+                              itemBuilder: (context, index) {
+                                if (index >= items.length) {
+                                  return VideoListItemPlaceHolder(
+                                    small: small,
+                                  );
+                                }
+                                final v = items[index];
+                                Video? onlineVideo;
+                                DownloadedVideo? offlineVideo;
 
-                                  if (v is Video) {
-                                    onlineVideo = v;
-                                  }
+                                if (v is Video) {
+                                  onlineVideo = v;
+                                }
 
-                                  if (v is DownloadedVideo) {
-                                    offlineVideo = v;
-                                  }
+                                if (v is DownloadedVideo) {
+                                  offlineVideo = v;
+                                }
 
-                                  return VideoListItem(
+                                return RepaintBoundary(
+                                  child: VideoListItem(
                                     small: small,
                                     showMetrics: showMetrics,
                                     key: ValueKey(
@@ -129,15 +141,9 @@ class VideoList<T extends IdedVideo> extends StatelessWidget {
                                     showVideoModalSheet: showVideoModalSheet,
                                     allowModalSheet: allowModalSheet,
                                     openVideoOverride: openVideoOverride,
-                                  );
-                                }),
-                                if (state.loading)
-                                  ...repeatWidget(
-                                      () => VideoListItemPlaceHolder(
-                                            small: small,
-                                          ),
-                                      count: 5 * gridCount)
-                              ],
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         )

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:clipious/app/states/app.dart';
 import 'package:clipious/globals.dart';
 import 'package:clipious/settings/models/db/server.dart';
 import 'package:clipious/utils/states/thumbnail.dart';
@@ -24,76 +25,71 @@ class Thumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colors = Theme.of(context).colorScheme;
-    return FutureBuilder<Server?>(
-        future: db.getCurrentlySelectedServer(),
-        builder: (context, server) {
-          return !server.hasData || server.data == null
-              ? Container(
-                  decoration: decoration,
-                  width: width,
-                  height: height,
-                  child: child)
-              : BlocProvider(
-                  create: (context) =>
-                      ThumbnailCubit(ThumbnailState(urls: thumbnails ?? [])),
-                  child: BlocBuilder<ThumbnailCubit, ThumbnailState>(
-                      builder: (context, state) {
-                    if (state.selected == null) {
-                      return _ErrorWidget(
-                          decoration: decoration, width: width, height: height);
-                    } else {
-                      final cubit = context.read<ThumbnailCubit>();
+    final Server? server =
+        context.select((AppCubit cubit) => cubit.state.server);
 
-                      final url = state.selected!.startsWith('/')
-                          ? server.data!.url + state.selected!
-                          : state.selected!;
+    if (server == null) {
+      return Container(
+          decoration: decoration, width: width, height: height, child: child);
+    }
 
-                      return CachedNetworkImage(
-                        key: ValueKey(url),
-                        cacheKey: url,
-                        httpHeaders: server.data?.customHeaders,
-                        errorListener: (value) => cubit.onThumbnailFailed(),
-                        imageBuilder: (context, imageProvider) =>
-                            AnimatedContainer(
-                          height: height,
-                          width: width,
-                          decoration: decoration.copyWith(
-                              image: DecorationImage(
-                                  image: imageProvider, fit: BoxFit.cover)),
-                          // duration: animationDuration,
-                          duration: animationDuration ~/ 2,
-                          curve: Curves.easeInOutQuad,
-                          child: child,
-                        ),
-                        imageUrl: url,
-                        placeholderFadeInDuration: animationDuration,
-                        fadeInDuration: animationDuration,
-                        fadeOutDuration: animationDuration,
-                        errorWidget: (context, url, error) => _ErrorWidget(
-                          decoration: decoration,
-                          width: width,
-                          height: height,
-                        ),
-                        progressIndicatorBuilder: (context, url, progress) =>
-                            Container(
-                          height: height,
-                          width: width,
-                          alignment: Alignment.center,
-                          decoration: decoration.copyWith(
-                              color: colors.secondaryContainer),
-                          // duration: animationDuration,
-                          child: const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1,
-                              )),
-                        ),
-                      );
-                    }
-                  }),
-                );
-        });
+    return BlocProvider(
+      create: (context) =>
+          ThumbnailCubit(ThumbnailState(urls: thumbnails ?? [])),
+      child: BlocBuilder<ThumbnailCubit, ThumbnailState>(
+          builder: (context, state) {
+        if (state.selected == null) {
+          return _ErrorWidget(
+              decoration: decoration, width: width, height: height);
+        }
+        final cubit = context.read<ThumbnailCubit>();
+        final url = state.selected!.startsWith('/')
+            ? server.url + state.selected!
+            : state.selected!;
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final cacheWidth = width != null ? (width! * dpr).round() : null;
+
+        return RepaintBoundary(
+          child: CachedNetworkImage(
+            key: ValueKey(url),
+            cacheKey: url,
+            httpHeaders: server.customHeaders,
+            memCacheWidth: cacheWidth,
+            maxWidthDiskCache: cacheWidth,
+            errorListener: (value) => cubit.onThumbnailFailed(),
+            imageBuilder: (context, imageProvider) => Container(
+              height: height,
+              width: width,
+              decoration: decoration.copyWith(
+                  image:
+                      DecorationImage(image: imageProvider, fit: BoxFit.cover)),
+              child: child,
+            ),
+            imageUrl: url,
+            placeholderFadeInDuration: motionShort,
+            fadeInDuration: motionShort,
+            fadeOutDuration: motionFast,
+            errorWidget: (context, url, error) => _ErrorWidget(
+              decoration: decoration,
+              width: width,
+              height: height,
+            ),
+            progressIndicatorBuilder: (context, url, progress) => Container(
+              height: height,
+              width: width,
+              alignment: Alignment.center,
+              decoration: decoration.copyWith(color: colors.secondaryContainer),
+              child: const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1,
+                  )),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }
 
