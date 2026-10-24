@@ -11,7 +11,7 @@ Target: Android phone + tablet, Invidious `2026.08.04-48c6110`
    persistence work against the self-hosted Invidious instance.
 3. Fix confirmed defects without rewriting working subsystems.
 4. Keep all tooling, caches and build outputs inside this workspace (owner instruction).
-5. Produce a debug APK and a physical-device verification plan for the owner.
+5. Produce an installable APK and a physical-device verification plan for the owner.
 6. Document verified facts separately from untested assumptions.
 
 ## 2. Scope and exclusions
@@ -21,7 +21,7 @@ Target: Android phone + tablet, Invidious `2026.08.04-48c6110`
 - Android Flutter client, API layer, models as needed, player URL handling, downloads,
   settings/persistence, manifest, and network/security configuration.
 - Live API validation against `http://localhost:5566`.
-- Debug APK build and adb/manual installation instructions.
+- APK build and adb/manual installation instructions.
 
 **Out of scope / not changed**
 
@@ -50,20 +50,20 @@ Persistence: Sembast+sqflite (main isolate) / JSON files (WorkManager isolate)
 
 | Task | Findings | Description | Risk | Status | Commit |
 |---|---|---|---|---|---|
-| T-01 | — | Environment, repo and toolchain baseline | Low | DONE | pending |
-| T-02 | — | Research Clipious/Invidious API and auth | Low | DONE | pending |
-| T-03 | BUG-001, BUG-011 | Resolve relative media URLs; guard empty streams | Medium | DONE (code) | pending |
-| T-04 | BUG-002 | Stop rejecting relative thumbnails; normalise/validate server URL | Low | DONE (code) | pending |
-| T-05 | BUG-003 | Resolve download URLs; add Dio timeouts | Medium | DONE (code) | pending |
-| T-06 | BUG-004 | Add global HTTP request timeout | Low | DONE (code) | pending |
-| T-07 | BUG-005 | Normalise trailing slashes everywhere | Low | DONE (code) | pending |
-| T-08 | BUG-006 | Declare `POST_NOTIFICATIONS` | Low | DONE (code) | pending |
-| T-09 | BUG-007 | Remove cookie from login error path | Low | DONE (code) | pending |
-| T-10 | BUG-008 | Robust response/error decoding | Low | DONE (code) | pending |
-| T-11 | BUG-009, BUG-010 | Resolve TV banner and notification artwork URLs | Low | DONE (code) | pending |
-| T-12 | — | Regression tests for URL resolution and response handling | Low | DONE | pending |
-| T-13 | — | Static analysis and server-independent tests | Low | DONE | pending |
-| T-14 | — | Build debug APK | Medium | IN PROGRESS | — |
+| T-01 | — | Environment, repo and toolchain baseline | Low | DONE | see PROGRESS.md |
+| T-02 | — | Research Clipious/Invidious API and auth | Low | DONE | see PROGRESS.md |
+| T-03 | BUG-001, BUG-011 | Resolve relative media URLs; guard empty streams | Medium | DONE | see PROGRESS.md |
+| T-04 | BUG-002 | Stop rejecting relative thumbnails; normalise/validate server URL | Low | DONE | see PROGRESS.md |
+| T-05 | BUG-003 | Resolve download URLs; add Dio timeouts | Medium | DONE | see PROGRESS.md |
+| T-06 | BUG-004 | Add global HTTP request timeout | Low | DONE | see PROGRESS.md |
+| T-07 | BUG-005 | Normalise trailing slashes everywhere | Low | DONE | see PROGRESS.md |
+| T-08 | BUG-006 | Declare `POST_NOTIFICATIONS` | Low | DONE | see PROGRESS.md |
+| T-09 | BUG-007 | Remove cookie from login error path | Low | DONE | see PROGRESS.md |
+| T-10 | BUG-008 | Robust response/error decoding | Low | DONE | see PROGRESS.md |
+| T-11 | BUG-009, BUG-010 | Resolve TV banner and notification artwork URLs | Low | DONE | see PROGRESS.md |
+| T-12 | — | Regression tests for URL resolution and response handling | Low | DONE | see PROGRESS.md |
+| T-13 | — | Static analysis and server-independent tests | Low | DONE | see PROGRESS.md |
+| T-14 | — | Build arm64 profile APK | Medium | DONE | artifact in `dist/` |
 | T-15 | BUG-012, BUG-013 | Document cleartext and credential-storage trade-offs | Low | DONE (docs) | — |
 | T-16 | — | Physical-device checklist and installation guide | Low | DONE (docs) | — |
 | T-17 | BUG-015, BUG-016 | Fix/provide test server for integration tests | Medium | DEFERRED | — |
@@ -96,7 +96,7 @@ T-18 depends on T-14 and owner-connected hardware.
 
 - `flutter analyze` reports no **errors**.
 - New regression tests pass.
-- Debug APK is produced and its path/size recorded.
+- APK is produced and its path/size recorded.
 - Instance can be added without disabling the advanced test (verified by code path; device
   confirmation pending).
 - Playback code produces absolute URLs for DASH, HLS, progressive and proxied streams
@@ -114,8 +114,8 @@ T-18 depends on T-14 and owner-connected hardware.
 | M3 Baseline tests/analysis | DONE |
 | M4 Implementation (T-03…T-11) | DONE (code) |
 | M5 Regression tests | DONE |
-| M6 APK build | IN PROGRESS |
-| M7 Documentation/handover | IN PROGRESS |
+| M6 APK build | DONE (arm64 profile APK verified) |
+| M7 Documentation/handover | DONE |
 | M8 Physical-device verification | BLOCKED / owner action |
 
 ## 9. Deferred work

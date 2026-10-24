@@ -1,4 +1,4 @@
-# INSTALLATION — Clipious debug build
+# INSTALLATION — Clipious arm64 profile build
 
 Last updated: 2026-10-24
 
@@ -9,11 +9,12 @@ Last updated: 2026-10-24
 | Android version | 7.0 (API 24) or newer |
 | Architecture | **arm64-v8a** for the APK described here (most phones/tablets since ~2015) |
 | Network | Same LAN as the Invidious host, or Tailscale |
-| Storage | ~250 MB free for installation/updates |
+| Storage | ~600 MB free for installation/updates |
 
-This build is a **debug** APK: it is larger than a release build, is marked debuggable, and is
-signed with a local debug key. Use it for testing. A release build requires your own signing
-key (see §11).
+This build is a **profile** APK (AOT-compiled, not the debug engine) signed with the Android
+debug key. It is intended for owner testing. It is larger than a release build because native
+libraries are packaged unstripped. A production release requires your own signing key (see
+§11).
 
 ## 2. Artifact
 
@@ -184,8 +185,9 @@ bash -c 'source .tooling/env.sh && flutter build apk --release --target-platform
 ```
 
 `key.properties` must contain `storeFile`, `storePassword`, `keyAlias`, `keyPassword`.
-Do not commit the keystore or the properties file. A release APK can replace this debug APK
-only if it is signed with the same key (it is not), so uninstall the debug build first.
+Do not commit the keystore or the properties file. A release APK can replace this
+profile/debug-signed APK only if it is signed with the same key (it is not), so uninstall the
+existing build first.
 
 ## 12. Build-environment note
 
