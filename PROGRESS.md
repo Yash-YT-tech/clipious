@@ -1,13 +1,13 @@
 # PROGRESS
 
-Last updated: 2026-10-25 (session 3)
+Last updated: 2026-10-25 (session 4)
 
 ## Current phase
 
-Phases 0–11 complete. Tablet verification, logged-in read-only checks and the performance/UX
-pass are complete. New work in this session: hold-to-2×, codec-aware quality with Auto,
-hardware-first sorting, plus comments/`youtu.be`/live fixes from the previous device run.
-The phone remains untested.
+Phases 0–11 complete. Tablet verification, logged-in read-only checks and the first motion/
+performance pass are complete. New work: hold-to-2×, codec-aware quality with Auto,
+hardware-first sorting, motion tokens/fades, thumbnail/grid rebuild fixes, reduced-motion
+support and progress-write tuning. The phone and formal DevTools frame trace remain pending.
 
 ## Environment baseline (recorded before changes)
 
@@ -76,11 +76,11 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 
 | Check | Result |
 |---|---|
-| `flutter analyze` | 364 issues, **0 errors** (all pre-existing info/warnings) |
-| New tests (`url_utils`, `handle_response`, `comments`, `codec`) | 26/26 pass |
+| `flutter analyze` | 365 issues, **0 errors** (all pre-existing info/warnings) |
+| New tests (`motion`, `url_utils`, `handle_response`, `comments`, `codec`) | 29/29 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `04e91ecc…19580`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `4a251834…14fab`, arm64-v8a, debug-signed, `apksigner verify` OK |
 | Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation, logged-in Subscriptions/Playlists/History (read-only), hold-to-2×, codec-aware quality/Auto; live streams BLOCKED by server manifest. See `TEST.md` §6 |
 | Performance | 1080p H.264 hardware track ~11% CPU; AV1 tracks remain software-decoded and may lag (labelled, sorted last, Auto recommended) |
 | Phone device tests | NOT RUN (phone not connected) |
@@ -104,6 +104,14 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
   `1.0`; verified on Auto/720p and 1080p H.264.
 - Quality menu now labels codecs and puts hardware H.264/VP9 first; Auto is selected. 1080p
   H.264 played with ~11% CPU; AV1/4K is software-decoded on this tablet and may lag.
+- Motion pass: tiered 100–350 ms tokens, standard/decelerate/accelerate curves, fades for
+  player chrome/2× badge/player tabs, faster queue/mini timings; existing 300 ms Zoom page
+  transition preserved and made reduced-motion-aware.
+- Thumbnails no longer query the selected server per build and decode is capped to display
+  width; Home uses a lazy grid; download app-bar rebuilds are scoped; progress writes are
+  throttled after the UI update.
+- UI parity screenshots match at rest; 2× hold, quality, comments, recommended, queue and
+  logged-in tabs still work. Reduced-motion mode launched and remained usable.
 - Cold start is slow (~18–28 s) on this tablet.
 
 ## Build environment (resolved)
@@ -124,6 +132,9 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 3. **Account mutations were not exercised.** Subscriptions/Playlists/History were verified
    read-only; no subscribe/add/delete operations were performed.
 4. **Network-loss search test was partial** (overlay submission not captured).
+   A formal DevTools UI/raster p95 trace for the motion pass is also not captured yet; the
+   remaining player-overlay progress split, skeleton tickers and eager comments are deferred
+   to that measured second pass.
 5. **Integration test suite not runnable here.** It requires a separate Invidious at
    `localhost:3000` with user `test`/`test` and deletes subscriptions/history in teardown;
    running it against the owner's account would destroy data.
@@ -152,6 +163,7 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `3a581a7` fix(android): handle youtu.be short links
 - `a2570d2` docs: record tablet device-test results and new findings
 - `3514960` feat(player): hardware-first quality menu and hold-to-2x playback
+- `2209782` perf(ui): smooth motion and reduce render jank
 - Final performance/UX documentation commit on this branch.
 
 ## Next actions (owner)

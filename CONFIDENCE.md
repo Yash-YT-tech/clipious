@@ -15,6 +15,7 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Search and browsing | HIGH (tablet) | Videos/Channels/Playlists tabs, channel page, playlist page and video detail all loaded real data | Pagination and malformed-response edge cases |
 | Video playback | HIGH for VOD (hardware H.264) / BLOCKED for live | VOD works with DASH on/off and Proxy+DASH; codec-aware quality with Auto; 1080p H.264 ~11% CPU; hold-to-2× verified; AV1 is labelled software. Live DASH is invalid (`PTNaNS`) and HLS is 403 | 4K AV1 is inherently laggy on this tablet; live is server-side; other devices untested |
 | Playback performance | MEDIUM | Auto picks a hardware AVC track; 1080p H.264 and 2× hold played on-device; AV1/4K shown as software and sorted last | No frame-timing trace (Flutter bypasses HWUI `gfxinfo`); cold start still 18–28 s |
+| Motion smoothness | MEDIUM | Tokenized 100–350 ms motion, player/tab/queue fades, thumbnail/grid rebuild fixes and reduced-motion smoke verified; static UI screenshots match | No formal DevTools p95 trace yet; player-overlay progress split, skeleton tickers and eager comments remain |
 | Audio-only playback | HIGH | Position advanced, AudioFlinger active, controls worked on-device | Other codecs/devices |
 | Downloads | HIGH | 144p download completed (ffmpeg-kit loaded), item appears in Downloads, and offline playback worked with Wi-Fi disabled | Larger downloads, storage pressure |
 | Authentication | HIGH (host + device read-only) | Cookie session works host-side; device Subscriptions/Playlists/History loaded with the owner's login | Account mutations intentionally not exercised; token flow interactive |
@@ -23,7 +24,7 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Phone compatibility | UNKNOWN | Phone not connected | Everything |
 | Tablet compatibility | MEDIUM | Lenovo TB-8505F, Android 10: portrait, landscape, dialogs and playback tested | One device; 533 dp uses phone layout; tablet-specific sidebar not active |
 | Security | MEDIUM | No credentials logged after fix; TLS verification not weakened; cleartext and plaintext credential storage documented | Broader hardening (encrypted storage, cleartext scoping) deferred |
-| Regression coverage | HIGH | 26 unit tests; analysis error-free; broad physical-device pass including hold-to-2×, codec-aware quality and logged-in read-only screens | Integration tests not runnable; phone untested; no account mutations |
+| Regression coverage | HIGH | 29 unit tests; analysis error-free; broad physical-device pass including hold-to-2×, codec-aware quality and logged-in read-only screens | Integration tests not runnable; phone untested; no account mutations |
 | Installation reproducibility | HIGH (tablet) / UNKNOWN (phone) | Signed APK installed and launched on the tablet; package/version/ABI/signature verified; manual and adb instructions documented | Phone not installed; debug signing key differs from store builds; arm64 only |
 
 ## What would raise confidence

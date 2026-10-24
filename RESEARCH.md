@@ -296,5 +296,41 @@ task or cloud inference was run.
 - Cold start is ~18–28 s; media-session progress can go stale after background/rotation while
   audio continues (AudioFlinger active).
 
+### Motion and performance research (2026-10-25)
+
+- Material 3 duration tiers: short 50–200 ms (micro/state), medium 250–400 ms (navigation,
+  component enter/exit), long 450–600 ms (large/complex), extra-long 700–1000 ms (large
+  hero/orchestration only). Routine UI should stay under 400 ms.
+- Curves: standard `Cubic(0.2, 0, 0, 1)`, decelerate `Cubic(0, 0, 0, 1)` for entering,
+  accelerate `Cubic(0.3, 0, 1, 1)` for leaving, emphasized for rare attention moments.
+  `easeInOutQuad` everywhere made short transitions feel sluggish; it is no longer the global
+  default.
+- Material 3 Expressive now recommends spring physics, but legacy duration/easing tokens remain
+  valid for transitions. Springs were rejected for this pass: they would need visual retuning
+  and increase regression risk.
+- Flutter frame budget: 16.67 ms at 60 Hz, 11.1 ms at 90 Hz, 8.33 ms at 120 Hz. The app forces
+  the highest refresh rate at startup. Flutter guidance: avoid build work, `saveLayer`,
+  repeated `Opacity`/clipping, eager lists, and animating layout properties.
+- Pinned Flutter 3.35 SDK: Android default page transition is `ZoomPageTransitionsBuilder`
+  (300 ms). `FadeForwardsPageTransitionsBuilder` is hard-coded to **800 ms** and was rejected as
+  too slow. The existing Zoom transition style is preserved; an accessibility wrapper skips its
+  visual motion when the OS asks for reduced motion.
+- Applied in this pass: tiered motion tokens, standard/decelerate/accelerate curves, player
+  chrome/badge/tab fades, faster queue/mini timings, thumbnail server/decode/rebuild fixes,
+  lazy `GridView.builder`, progress persistence after emit, download app-bar `buildWhen`, and
+  reduced-motion handling for the new fades.
+- Remaining opportunities (needs DevTools measurements): split the player overlay's progress
+  listeners from the controls, share skeleton tickers, and make comments/recommended lazy.
+  A formal UI/raster p95 trace is not yet captured.
+
+Sources: [Material 3 easing and duration](https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration),
+[Material 3 motion tokens](https://m3.material.io/styles/motion/easing-and-duration/tokens-specs),
+[Material motion values reference](https://www.designref.ai/design-systems/material-design/motion),
+[Flutter performance best practices](https://docs.flutter.dev/perf/best-practices),
+[Flutter rendering performance](https://docs.flutter.dev/perf/rendering-performance),
+[Flutter PageTransitionsTheme](https://api.flutter.dev/flutter/material/PageTransitionsTheme-class.html),
+[Flutter disableAnimations](https://api.flutter.dev/flutter/widgets/MediaQueryData/disableAnimations.html).
+Pinned SDK source: `.tooling/flutter/packages/flutter/lib/src/material/page_transitions_theme.dart`.
+
 Sources: scrcpy README/`doc/linux.md` and release `SHA256SUMS.txt`; Artemis `README.md`,
 `pyproject.toml`, `.env.example`, `config/artemis.jsonc`, `start.sh`. Accessed 2026-10-24.

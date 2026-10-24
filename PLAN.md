@@ -75,6 +75,10 @@ Persistence: Sembast+sqflite (main isolate) / JSON files (WorkManager isolate)
 | T-23 | BUG-024 | Codec labels, hardware-first quality, Auto option | Medium | DONE | `3514960` |
 | T-24 | FEATURE-001 | Hold-to-2× gesture with badge and speed restore | Medium | DONE | `3514960` |
 | T-25 | — | Logged-in Subscriptions/Playlists/History read-only verification | Low | DONE (tablet) | `TEST.md` §6 |
+| T-26 | MOTION-001 | Motion tokens, curves, player/tab/queue fades, reduced motion | Medium | DONE | `2209782` |
+| T-27 | PERF-001…003 | Thumbnail render path, lazy grid, build scope, progress writes | High | DONE | `2209782` |
+| T-28 | — | On-device UI parity, controls/2×/quality/tabs, reduced-motion smoke | Medium | DONE | `TEST.md` §7.5 |
+| T-29 | — | Formal DevTools UI/raster p95 trace | Medium | NOT RUN | Next measured pass |
 
 Dependencies: T-03…T-11 depend on T-01/T-02; T-13 depends on T-03…T-12; T-14 depends on T-13;
 T-18 depends on T-14 and owner-connected hardware.
@@ -127,6 +131,7 @@ T-18 depends on T-14 and owner-connected hardware.
 | M6 APK build | DONE (arm64 profile APK verified) |
 | M7 Documentation/handover | DONE |
 | M8 Physical-device verification | PARTIAL: tablet PASS (except live), logged-in read-only PASS; phone and account mutations pending |
+| M9 Motion/performance pass | PARTIAL: UI parity, fades, thumbnail/grid fixes and reduced-motion verified; formal frame trace and remaining rebuild splits pending |
 
 ## 9. Deferred work
 
@@ -141,3 +146,5 @@ T-18 depends on T-14 and owner-connected hardware.
 - Tablet layout: decide whether a 533 dp device should use tablet views (currently phone).
 - 4K AV1 playback: this tablet has no AV1 hardware decoder; the app now labels/sorts it and
   recommends Auto/H.264, but true 4K AV1 smoothness requires different hardware.
+- Motion second pass: capture DevTools traces, split the player overlay's progress listeners,
+  share skeleton tickers, and make comments/recommended lazy.

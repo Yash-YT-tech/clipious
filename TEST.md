@@ -27,7 +27,7 @@ bash -c 'source .tooling/env.sh && flutter analyze --no-fatal-infos --no-fatal-w
 | Run | Result |
 |---|---|
 | Baseline before edits | 367 issues, **1 error** (`test/test_player_cubit.dart:7`, body might complete normally) |
-| After edits | 364 issues, **0 errors** |
+| After edits | 365 issues, **0 errors** |
 
 Remaining issues are pre-existing infos/warnings (missing type annotations, deprecated
 Workmanager `isInDebugMode`, `invalid_annotation_target` on `json_annotation`, pubspec sort).
@@ -38,13 +38,14 @@ The one baseline error was a test-helper bug and was fixed.
 Command:
 
 ```bash
-bash -c 'source .tooling/env.sh && flutter test test/utils/codec_utils_test.dart test/utils/url_utils_test.dart test/service/handle_response_test.dart test/comments/comment_json_test.dart'
+bash -c 'source .tooling/env.sh && flutter test test/utils/motion_test.dart test/utils/codec_utils_test.dart test/utils/url_utils_test.dart test/service/handle_response_test.dart test/comments/comment_json_test.dart'
 ```
 
-Result: **26/26 passed** (`+26: All tests passed!`).
+Result: **29/29 passed** (`+29: All tests passed!`).
 
 | File | Cases | Result |
 |---|---|---|
+| `test/utils/motion_test.dart` | 3 | PASS |
 | `test/utils/codec_utils_test.dart` | 5 | PASS |
 | `test/utils/url_utils_test.dart` | 11 | PASS |
 | `test/service/handle_response_test.dart` | 5 | PASS |
@@ -138,7 +139,7 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,578,371 bytes (231.4 MiB) |
-| SHA-256 | `04e91ecc8974c304c02bdbc474bff274c72a5dd8362469c1eb0c217c17219580` |
+| SHA-256 | `4a25183428ae6b5c7e0e4308571bbd49b5d4652953703a11ef31c369f5714fab` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |
@@ -225,6 +226,28 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
 | Release APK | NOT RUN | No signing key; profile APK is the owner-test artifact |
 | Integration test suite | NOT RUN | Requires dedicated test server/account; destructive teardown |
 | Emulator tests | NOT RUN | Prohibited by project constraints |
+
+## 7.5 Motion and rendering pass (2026-10-25)
+
+- UI parity: Home, player controls, player tabs and queue were captured before/after; layout,
+  colors, typography and spacing are unchanged.
+- Player chrome now fades in/out; the 2× badge animates; player-tab content fades; queue scroll
+  and highlight are shorter.
+- Thumbnails no longer issue a selected-server DB query per build; decoded images are capped to
+  their display width and wrapped in `RepaintBoundary`.
+- Home uses a lazy `GridView.builder` with the same grid geometry; the download app bar only
+  rebuilds when its displayed state changes.
+- Playback position is emitted before the throttled DB write; progress resume behavior is
+  unchanged.
+- Reduced-motion verification: with Android animation scales set to 0, the app launched, the
+  player controls remained visible/usable, and no Flutter exceptions appeared. Settings were
+  restored to 1 afterward.
+- 2× hold, quality/Auto, comments, recommended, queue and logged-in tabs still work on-device.
+- **Not yet measured:** a formal DevTools frame-timing trace (UI/raster p95) was not captured.
+  Flutter bypasses HWUI `gfxinfo`; this remains the next measurement step.
+- Remaining known hot spots: the player overlay still listens to progress ticks, skeleton
+  placeholders own per-instance tickers, and comments/recommended still build eager columns.
+  These were intentionally left for a measured second pass to avoid regressions.
 
 ## 8. Known limitations
 

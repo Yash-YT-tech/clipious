@@ -162,6 +162,46 @@ Commit hashes are filled in after the incremental commits.
   and 1080p H.264.
 - **Commit:** `3514960`.
 
+## FIX-016 — Motion tokens, fades and reduced motion (MOTION-001)
+
+- **Files:** `lib/globals.dart`, `lib/utils/views/motion.dart`, `lib/main.dart`,
+  `player_controls.dart`, `player.dart`, `expanded_player.dart`, `home.dart`, `video_queue.dart`,
+  `compact_video.dart`, `video.dart`, `channel.dart`, `player_placeholder.dart`,
+  `mini_player_progress.dart`.
+- **Change:** 100/150/200/250/300/350/500 ms tokens; standard/decelerate/accelerate curves;
+  player chrome and 2× badge fades; player-tab fade; faster queue/highlight/mini progress;
+  reduced-motion wrapper; existing 300 ms Android Zoom page transition preserved.
+- **Verification:** on-device screenshots at rest unchanged; controls fade in/out; tabs and queue
+  render; 2× hold still works; reduced-motion mode launched/used without exceptions.
+- **Commit:** `2209782`.
+
+## FIX-017 — Thumbnail rebuild/decode path (PERF-001)
+
+- **File:** `lib/utils/views/components/thumbnail.dart`.
+- **Change:** resolve selected server from `AppCubit` instead of a DB future in `build`; keep
+  the image request mounted; cap decode to display width × DPR; remove the decoration
+  animation; add `RepaintBoundary`; reduce fades.
+- **Verification:** Home/grid/player/settings thumbnails load; layout unchanged; no exceptions.
+- **Commit:** `2209782`.
+
+## FIX-018 — Player drag/progress timings (PERF-002)
+
+- **Files:** `lib/player/states/player.dart`, `lib/player/views/components/player.dart`.
+- **Change:** zero implicit animation durations during drag; emit position before a throttled
+  5-second DB write; save on pause/hide; 200 ms mini/full snap.
+- **Verification:** player controls, mini/full layout, 2× hold and tab content verified.
+- **Commit:** `2209782`.
+
+## FIX-019 — Lazy grid and build scope (PERF-003)
+
+- **Files:** `lib/videos/views/components/video_list.dart`,
+  `lib/downloads/views/components/download_app_bar_button.dart`,
+  `lib/home/views/screens/home.dart`.
+- **Change:** `GridView.builder` with identical geometry, cacheExtent and RepaintBoundary;
+  download app-bar `buildWhen`; settings `select` for home layout.
+- **Verification:** Home grid screenshots identical; scroll/no exceptions.
+- **Commit:** `2209782`.
+
 ## Commit map
 
 | Fix | Commit |
@@ -185,6 +225,10 @@ Commit hashes are filled in after the incremental commits.
 | FIX-013 live DASH/stale playback | `705bc7c` |
 | FIX-014 codec-aware quality/Auto | `3514960` |
 | FIX-015 hold-to-2× | `3514960` |
+| FIX-016 motion system/fades | `2209782` |
+| FIX-017 thumbnail render path | `2209782` |
+| FIX-018 player drag/progress | `2209782` |
+| FIX-019 lazy grid/build scope | `2209782` |
 | scrcpy/Artemis research + test plan | `196b160` |
 | Device-test results documentation | `a2570d2` |
 

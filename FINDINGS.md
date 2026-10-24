@@ -43,6 +43,10 @@ Status values: **FIXED** (change implemented, automated test/build status in `TE
 | BUG-023 | Info | Confirmed | Deep links | A video whose Invidious response is an empty 200 shows “Could not load the video” | NOT A BUG (server response) |
 | BUG-024 | High | Confirmed | Performance/quality | 2160p/1440p/1080p options are AV1, software-decoded on this tablet, causing lag; menu hid codec and had no Auto | FIXED (codec labels, hardware-first sort, Auto) |
 | FEATURE-001 | — | Implemented | Playback | No hold-to-2× gesture | DONE (badge + restore) |
+| PERF-001 | High | Confirmed | Thumbnails | Selected-server DB query + full-size decode on every rebuild | FIXED (cache/server hoist + decode cap) |
+| PERF-002 | Medium | Confirmed | Player | Drag retargeted implicit animations every frame; progress DB write before UI | FIXED/MITIGATED (zero-duration drag + throttled save) |
+| MOTION-001 | Medium | Confirmed | Motion system | One 250 ms/easeInOutQuad token; hard-cut player chrome; 1000 ms queue/placeholder motion | FIXED (tokens, fades, shorter timings) |
+| PERF-003 | Low | Confirmed | Lists | Eager `GridView.count`; download app bar rebuilt on every progress tick | FIXED (builder + `buildWhen`) |
 
 ---
 
@@ -377,6 +381,36 @@ Implemented a long-press on the video surface: speed becomes 2.0× while held, a
 shown, and releasing restores the previous speed. The temporary speed is not persisted as the
 remembered playback speed. Verified on-device with logs `Hold speed start: 1.0 -> 2.0` and
 `Hold speed stop -> 1.0` (badge visible in the capture).
+
+## PERF-001 — Thumbnail rebuild/decode cost
+
+`lib/utils/views/components/thumbnail.dart` ran `db.getCurrentlySelectedServer()` inside
+`build()` for every thumbnail and decoded full-size 1280×720 images. The selected server is now
+read once from `AppCubit`, the image request stays mounted, decode is capped to the displayed
+width × DPR, the decoration animation was removed, and the image is wrapped in
+`RepaintBoundary`. Visual output is unchanged.
+
+## PERF-002 — Player drag and progress writes
+
+Mini-player drag used to retarget three implicit animations on every drag delta; the implicit
+durations are now `Duration.zero` during drag, and progress is emitted before a 5-second
+throttled DB write (plus save on pause/close). This reduces UI-thread contention while preserving
+the drag trajectory, snap threshold and resume behavior.
+
+## MOTION-001 — Ad-hoc motion and hard cuts
+
+The app used one 250 ms `easeInOutQuad` token with multipliers up to 1000 ms, and player chrome
+switched instantly. Added 100/150/200/250/300/350/500 ms tiers with standard/decelerate/
+accelerate curves; player chrome, the 2× badge and player tabs fade; queue scroll is 350 ms and
+the highlight 200 ms; mini progress is 500 ms. The existing 300 ms Android Zoom page transition
+is preserved (Flutter's FadeForwards builder is 800 ms and was rejected).
+
+## PERF-003 — Eager list and app-bar rebuilds
+
+Home video grids now use `GridView.builder` with the same grid geometry and a `cacheExtent`;
+the download app bar rebuilds only when its displayed count/progress changes. Remaining
+opportunities are documented in `TEST.md` §7.5: split the player overlay's progress listeners,
+share skeleton tickers, and make comments/recommended lazy.
 
 ## Investigated and found acceptable
 
