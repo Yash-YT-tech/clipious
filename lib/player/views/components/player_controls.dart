@@ -74,8 +74,29 @@ class PlayerControls extends StatelessWidget {
       BuildContext context, PlayerControlsState _,
       {required List<String> tracks,
       required int selected,
-      required Function(int index) onSelected}) async {
-    List<ListTile> widgets = [];
+      required Function(int index) onSelected,
+      VoidCallback? onAuto,
+      bool autoSelected = false}) async {
+    var locals = AppLocalizations.of(context)!;
+    List<Widget> widgets = [];
+
+    if (onAuto != null) {
+      widgets.add(ListTile(
+          onTap: () {
+            Navigator.of(context).pop();
+            onAuto();
+          },
+          leading:
+              autoSelected ? const Icon(Icons.check) : const SizedBox.shrink(),
+          title: Text('Auto (${locals.recommended})')));
+      widgets.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Text(
+          'AV1/4K tracks may lag. Auto uses hardware decoding when available.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ));
+    }
 
     for (int i = 0; i < tracks.length; i++) {
       widgets.add(ListTile(
@@ -157,6 +178,8 @@ class PlayerControls extends StatelessWidget {
                       tracks: videoTracks,
                       selected: pc.selectedVideoTrack(),
                       onSelected: pc.selectVideoTrack,
+                      onAuto: pc.isUsingDash() ? pc.clearVideoTrack : null,
+                      autoSelected: pc.selectedVideoTrack() < 0,
                     );
                   },
                   leading: const Icon(Icons.hd),
@@ -270,6 +293,20 @@ class PlayerControls extends StatelessWidget {
 
             var cubit = context.read<PlayerControlsCubit>();
 
+            late final MediaPlayerCubit mediaPlayer;
+            if (mediaPlayerCubit != null) {
+              mediaPlayer = mediaPlayerCubit!;
+            } else if (player.state.isAudio) {
+              mediaPlayer = context.read<AudioPlayerCubit>();
+            } else {
+              mediaPlayer = context.read<VideoPlayerCubit>();
+            }
+            final canHoldToSpeed = !isMini &&
+                !isPip &&
+                !playerState.displayControls &&
+                !player.state.isAudio &&
+                !playerState.errored;
+
             // to allow or not dragging to adjust brightness and volume
             var canDragToAdjustDeviceSettings = screenControlsEnabled &&
                 playerState.fullScreenState == FullScreenState.fullScreen &&
@@ -298,6 +335,18 @@ class PlayerControls extends StatelessWidget {
                             playerState.displayControls
                         ? null
                         : player.videoDragStarted,
+                onLongPressStart: canHoldToSpeed
+                    ? (_) {
+                        mediaPlayer.startHoldSpeed();
+                        cubit.setHoldingSpeed(true);
+                      }
+                    : null,
+                onLongPressEnd: (_) {
+                  if (mediaPlayer.isHoldingSpeed) {
+                    mediaPlayer.stopHoldSpeed();
+                    cubit.setHoldingSpeed(false);
+                  }
+                },
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Stack(
@@ -343,6 +392,37 @@ class PlayerControls extends StatelessWidget {
                                     duration: animationDuration,
                                     curve: Curves.easeInOutQuad,
                                     delay: const Duration(seconds: 1))),
+                      if (!isMini && !isPip)
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: cubit.holdingSpeed,
+                            builder: (context, holding, child) => holding
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.65),
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.fast_forward,
+                                            color: Colors.white, size: 18),
+                                        SizedBox(width: 4),
+                                        Text('2x',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ),
                       if (!isMini && !isPip)
                         Positioned(
                             left: 0,

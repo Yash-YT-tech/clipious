@@ -325,7 +325,9 @@ class AudioPlayerCubit extends MediaPlayerCubit<AudioPlayerState> {
   @override
   void setSpeed(double d) {
     audioPlayer?.setSpeed(d);
-    settings.setLastSpeed(d);
+    if (!isHoldingSpeed) {
+      settings.setLastSpeed(d);
+    }
   }
 
   @override

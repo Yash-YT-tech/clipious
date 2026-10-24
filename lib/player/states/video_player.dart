@@ -13,6 +13,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../globals.dart';
 import '../../main.dart';
+import '../../utils/codec_utils.dart';
 import '../../utils/pretty_bytes.dart';
 import '../../utils/url_utils.dart';
 import '../../videos/models/video.dart';
@@ -47,6 +48,9 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
 
   @override
   disposeControllers() {
+    if (isHoldingSpeed) {
+      stopHoldSpeed();
+    }
     WakelockPlus.disable();
     log.fine("Disposing video controller");
     var state = this.state.copyWith();
@@ -171,7 +175,8 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
             videoController?.betterPlayerSubtitlesSource?.name ?? '');
         break;
       case BetterPlayerEventType.setSpeed:
-        if (event.parameters?.containsKey("speed") ?? false) {
+        if (!isHoldingSpeed &&
+            (event.parameters?.containsKey("speed") ?? false)) {
           settings.setLastSpeed(event.parameters?["speed"]);
         }
         break;
@@ -456,7 +461,43 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
   }
 
   String _videoTrackToString(BetterPlayerAsmsTrack? track) {
-    return '${track?.height}p - ${prettyBytes((track?.bitrate ?? 0).toDouble(), bits: true)}/s';
+    final codec = videoCodecLabel(track?.codecs, track?.mimeType);
+    final bitrate = prettyBytes((track?.bitrate ?? 0).toDouble(), bits: true);
+    return '${track?.height}p - $bitrate/s${codec.isNotEmpty ? ' - $codec' : ''}';
+  }
+
+  int _videoCodecRank(BetterPlayerAsmsTrack track) {
+    final codec = (track.codecs ?? '').toLowerCase();
+    if (codec.contains('avc1') || codec.contains('h264')) {
+      return 0;
+    }
+    if (codec.contains('vp09') || codec.contains('vp9')) {
+      return 1;
+    }
+    if (codec.contains('hev1') ||
+        codec.contains('hvc1') ||
+        codec.contains('hevc')) {
+      return 2;
+    }
+    if (codec.contains('av01')) {
+      return 3;
+    }
+    return 4;
+  }
+
+  /// Hardware-friendly codecs first, AV1/software last. The indices used by
+  /// the quality sheet and by [selectVideoTrack] must refer to the same order.
+  List<BetterPlayerAsmsTrack> _sortedVideoTracks() {
+    final tracks = List<BetterPlayerAsmsTrack>.from(
+        videoController?.betterPlayerAsmsTracks ?? []);
+    tracks.sort((a, b) {
+      final rank = _videoCodecRank(a).compareTo(_videoCodecRank(b));
+      if (rank != 0) {
+        return rank;
+      }
+      return (b.height ?? 0).compareTo(a.height ?? 0);
+    });
+    return tracks;
   }
 
   String _audioTrackToString(BetterPlayerAsmsAudioTrack? track) {
@@ -471,10 +512,7 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
   List<String> getVideoTracks() {
     if (state.video != null) {
       if (videoController?.betterPlayerAsmsTracks.isNotEmpty ?? false) {
-        return videoController?.betterPlayerAsmsTracks
-                .map(_videoTrackToString)
-                .toList() ??
-            [];
+        return _sortedVideoTracks().map(_videoTrackToString).toList();
       } else {
         return (state.video?.formatStreams ?? [])
             .map((e) => e.resolution)
@@ -571,10 +609,9 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
   @override
   selectVideoTrack(int index) {
     if (isUsingDash()) {
-      var betterPlayerAsmsTrack =
-          videoController?.betterPlayerAsmsTracks[index];
-      if (betterPlayerAsmsTrack != null) {
-        videoController?.setTrack(betterPlayerAsmsTrack);
+      final sortedTracks = _sortedVideoTracks();
+      if (index >= 0 && index < sortedTracks.length) {
+        videoController?.setTrack(sortedTracks[index]);
       }
     } else {
       var track = getVideoTracks()[index];
@@ -584,6 +621,15 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
         emit(state.copyWith(selectedNonDashTrack: track));
       }
     }
+  }
+
+  @override
+  void clearVideoTrack() {
+    if (!isUsingDash()) {
+      return;
+    }
+    videoController?.setTrack(BetterPlayerAsmsTrack.defaultTrack());
+    emit(state.copyWith(selectedNonDashTrack: ''));
   }
 
   @override

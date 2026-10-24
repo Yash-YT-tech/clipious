@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipious/downloads/models/downloaded_video.dart';
 import 'package:clipious/player/models/media_event.dart';
+import 'package:logging/logging.dart';
 
 import '../../../videos/models/video.dart';
 import '../../models/media_command.dart';
@@ -16,6 +17,37 @@ abstract class MediaPlayerCubit<T extends MediaPlayerState> extends Cubit<T> {
   final PlayerCubit player;
 
   MediaPlayerCubit(super.initialState, this.player);
+
+  static final _speedLog = Logger('HoldSpeed');
+  double? _speedBeforeHold;
+
+  bool get isHoldingSpeed => _speedBeforeHold != null;
+
+  /// Temporarily raises the playback speed while the user holds the video.
+  /// The previous speed is restored on release; this temporary change is not
+  /// persisted as the remembered playback speed.
+  void startHoldSpeed([double speed = 2.0]) {
+    if (_speedBeforeHold != null) {
+      return;
+    }
+    _speedBeforeHold = getSpeed();
+    _speedLog.info('Hold speed start: $_speedBeforeHold -> $speed');
+    setSpeed(speed);
+  }
+
+  void stopHoldSpeed() {
+    final previous = _speedBeforeHold;
+    if (previous == null) {
+      return;
+    }
+    _speedBeforeHold = null;
+    _speedLog.info('Hold speed stop -> $previous');
+    setSpeed(previous);
+  }
+
+  /// Clears a manual video-track selection and lets the adaptive selector
+  /// choose a supported codec/resolution again.
+  void clearVideoTrack() {}
 
   void disposeControllers();
 

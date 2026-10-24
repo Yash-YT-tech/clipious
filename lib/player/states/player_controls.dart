@@ -20,9 +20,20 @@ final log = Logger('PlayerControlControllers');
 
 class PlayerControlsCubit extends Cubit<PlayerControlsState> {
   final PlayerCubit player;
+  final ValueNotifier<bool> holdingSpeed = ValueNotifier(false);
 
   PlayerControlsCubit(super.initialState, this.player) {
     onReady();
+  }
+
+  void setHoldingSpeed(bool value) {
+    holdingSpeed.value = value;
+  }
+
+  @override
+  Future<void> close() async {
+    holdingSpeed.dispose();
+    await super.close();
   }
 
   void onReady() {
