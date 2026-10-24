@@ -247,20 +247,41 @@ Accessed 2026-10-24 unless stated otherwise.
   installation under `.tooling/artemis/.venv` with `UV_CACHE_DIR` inside `.caches/uv`.
   **No Artemis task has been run** and no API key or `.env` secret was created.
 
-### Current device state
+### Device state after authorization
 
-- Tablet serial `HA1D09AS` is visible via adb but **unauthorized**
-  (`adb devices` shows `unauthorized`). Testing cannot start until the owner accepts the
-  USB-debugging prompt on the tablet.
+- Tablet serial `HA1D09AS`: **Lenovo TB-8505F**, Android **10 (API 29)**, arm64-v8a,
+  800×1280 physical, density 240 → **533 dp shortest side**, 2.0 GB free.
+- Clipious was not installed; the arm64 profile APK was installed and exercised.
+- Device tests used adb/UIAutomator + screencap + `dumpsys media_session/notification/
+  audio_flinger`; scrcpy 5.0.1 is available for visual control/recording.
+- Results: server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality,
+  audio-only, background/notification, 144p download, offline playback, comments (after fix),
+  channel/playlist pages and rotation passed. Live streams are blocked by the server's
+  invalid DASH manifest; auth/subscriptions/history were skipped for privacy.
 
-### Chosen automation approach
+### Tester comparison and chosen approach
 
-1. **Deterministic first:** `adb shell input`, `uiautomator dump`, `adb exec-out screencap`,
-   and `scrcpy --no-audio --record=…` for reproducible tests without cloud inference.
-2. **Artemis optional:** staged locally, helper auto-install disabled, no keys. It will only
-   be used if the owner provides a provider key and accepts screenshot uploads.
-3. **Privacy boundary:** keep Clipious in the foreground, do not open other apps, do not
-   pull personal files, do not log in to the Invidious account during automated UI tests.
+| Option | Cloud? | Device install? | Assessment |
+|---|---|---|---|
+| **adb + UIAutomator dump + screencap** | No | No | **Chosen.** Flutter semantics are exposed as `content-desc` on this device; fastest to start, no extra runtime, works on API 29 |
+| scrcpy 5.0.1 | No | Temporary server only | Chosen for visual/control and recording; not a test runner |
+| Maestro CLI | No | No (driver via UIAutomator) | Viable YAML runner, API 29 supported, but adds a JVM tool; unnecessary because the semantics dump was sufficient |
+| Appium + UiAutomator2 | No | Driver/server | Heavier (Node/Appium), robust but slower to set up; not needed |
+| Flutter `integration_test` | No | Debug/test APK | Most reliable for widget-level assertions, but requires adding test code and a debug 696 MB APK; not chosen for breadth/time |
+| Artemis | **Yes (VLM)** | Accessibility helper optional | Staged locally but **not used**: cloud screenshot upload conflicts with the privacy constraint |
+
+**Privacy boundary:** keep Clipious in the foreground, do not open other apps, do not pull
+personal files, do not log in to the Invidious account during automated UI tests. No Artemis
+task or cloud inference was run.
+
+### Device-specific findings from the run
+
+- `authorThumbnail` (string) comments caused a raw type-cast error; fixed and verified.
+- `youtu.be` links were resolved by the official YouTube app because the manifest required
+  `/watch` and used `autoVerify`; fixed, though YouTube remains the default handler.
+- Live DASH is invalid (`mediaPresentationDuration="PTNaNS"`); HLS endpoints return 403.
+- Cold start is ~18–28 s; media-session progress can go stale after background/rotation while
+  audio continues (AudioFlinger active).
 
 Sources: scrcpy README/`doc/linux.md` and release `SHA256SUMS.txt`; Artemis `README.md`,
 `pyproject.toml`, `.env.example`, `config/artemis.jsonc`, `start.sh`. Accessed 2026-10-24.

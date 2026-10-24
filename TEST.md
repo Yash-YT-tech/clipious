@@ -41,12 +41,13 @@ Command:
 bash -c 'source .tooling/env.sh && flutter test test/utils/url_utils_test.dart test/service/handle_response_test.dart'
 ```
 
-Result: **16/16 passed** (`+16: All tests passed!`).
+Result: **21/21 passed** (`+21: All tests passed!`).
 
 | File | Cases | Result |
 |---|---|---|
 | `test/utils/url_utils_test.dart` | 11 | PASS |
 | `test/service/handle_response_test.dart` | 5 | PASS |
+| `test/comments/comment_json_test.dart` | 5 | PASS |
 
 Server-independent existing tests:
 
@@ -136,7 +137,7 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,512,835 bytes (231.3 MiB) |
-| SHA-256 | `58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458` |
+| SHA-256 | `4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |
@@ -170,24 +171,64 @@ apksigner verify --print-certs dist/clipious-1.22.15-arm64-profile.apk
 unzip -t dist/clipious-1.22.15-arm64-profile.apk   # ZIP_OK
 ```
 
-## 6. Not run / blocked
+## 6. Physical device verification (tablet)
+
+Device: **Lenovo TB-8505F**, Android **10 (API 29)**, arm64-v8a, 800×1280 @ 240 dpi
+(533 dp shortest side), 2.0 GB free. Clipious was not installed; the normal package was
+installed. Evidence: UIAutomator dumps, `screencap`, `dumpsys media_session/notification/
+audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-20261024-220727/`.
+
+| Area | Result | Evidence |
+|---|---|---|
+| Install / launch | PASS | Installed 1.22.15 (60773); no crash. First frame 17.7 s; cold start ~20–28 s |
+| Add self-hosted server (advanced test) | PASS | `http://192.168.1.4:5566` accepted; no thumbnail error |
+| Home / Popular / Trending | PASS | Real cards and thumbnails rendered |
+| Search: Videos / Channels / Playlists | PASS | All tabs loaded real results |
+| Video detail | PASS | Title, metadata, description, tabs, mini-player |
+| VOD playback, DASH on | PASS | `state=3`, position advanced, no codec/ExoPlayer errors |
+| VOD playback, DASH off | PASS | Progressive 360p; `state=3` |
+| VOD playback, Proxy + DASH | PASS | `Playing url (dash true) …?local=true`; `state=3` |
+| Quality switching | PASS | Adaptive list 2160p→144p; 480p selected; playback continued |
+| Audio tracks | PASS (single) | Only `hi - hi` track exposed |
+| Audio-only mode | PASS | Position advanced; AudioFlinger active; pause/seek controls |
+| Background playback / notification | PASS | Position advanced while backgrounded; MediaStyle notification with Rewind/Pause/Stop/Fast-forward |
+| Download | PASS | 144p (~1.5 MB) downloaded; download icon changed to a checkmark; thumbnail present |
+| Offline playback | PASS | Wi-Fi disabled (ping unreachable); downloaded Rick Astley played from local storage |
+| Comments tab | **FAIL → FIXED → PASS** | Initially `type 'Null' is not a subtype of List<dynamic>`; after fix authors/timestamps/text render |
+| Channel page | PASS | Banner, description, subscribe, tabs, latest videos |
+| Playlist page | PASS | Header, play button, video list, mini-player |
+| Rotation / landscape | PASS with caveat | 1280×800 landscape; full-screen player; audio continued. Media-session position reporting went stale while backgrounded/rotated (AudioFlinger still active; internal position had advanced) |
+| Deep link `youtube.com/watch?v=` | PASS | Opened the Rick Astley detail |
+| Deep link `youtu.be/<id>` | FIXED (manifest), not implicitly proven | Filter now correct; the installed official YouTube app remains the default handler, so implicit resolution still selects YouTube |
+| Live stream | **BLOCKED (server)** | Invidious DASH manifest has `mediaPresentationDuration="PTNaNS"`; ExoPlayer rejects it; HLS endpoints return 403. App now tries DASH, shows a clear error, and stops the previous video |
+| Network-loss search | PARTIAL | Search overlay/keyboard interaction did not submit reliably; no explicit offline error captured |
+| Auth / subscriptions / history | SKIPPED | Personal data; not opened |
+| Notifications (Android 13+ permission) | N/A | Device is Android 10; media notification itself verified |
+| Tablet-specific layout | PARTIAL | At 533 dp the app uses its phone layout; landscape uses 2 columns. The 600 dp `DeviceType.tablet` threshold is not met |
+
+## 7. Not run / blocked
 
 | Item | Status | Reason |
 |---|---|---|
-| Physical phone tests | NOT RUN | No device connected (`adb devices -l` empty) |
-| Physical tablet tests | NOT RUN | Same |
+| Physical phone tests | NOT RUN | Phone not connected (`adb devices` showed only the tablet) |
 | Token login round-trip | NOT RUN | Requires interactive browser approval |
-| Video/audio playback on device | NOT RUN | No device |
-| Downloads on device | NOT RUN | No device storage/codecs |
-| Notification delivery on Android 13+ | NOT RUN | No device |
-| Release APK | NOT RUN | No signing key; debug APK is the intended owner-test artifact |
+| Auth / subscriptions / history | SKIPPED | Would read personal account data |
+| Live playback | BLOCKED | Invalid Invidious DASH manifest (`PTNaNS`); HLS disabled/403 |
+| Network-loss search error | PARTIAL | Overlay submission not captured |
+| Release APK | NOT RUN | No signing key; profile APK is the owner-test artifact |
 | Integration test suite | NOT RUN | Requires dedicated test server/account; destructive teardown |
 | Emulator tests | NOT RUN | Prohibited by project constraints |
 
-## 7. Known limitations
+## 8. Known limitations
 
-- Device behaviour, codec support, LAN reachability and orientation/tablet layouts are
-  unverified.
+- The phone is untested; the tablet is a single Android 10 / arm64 device.
+- Live streams are blocked by the server's invalid DASH manifest; the app fails gracefully.
+- Cold start is slow (~18–28 s) on this tablet.
+- The media-session position can stop updating while backgrounded/rotated even though audio
+  continues; the internal position and AudioFlinger show progress.
+- At 533 dp, the app uses the phone layout; the 600 dp tablet threshold is not met.
+- The official YouTube app is still the default handler for YouTube links; Clipious is now a
+  valid alternative handler.
 - The build environment has no `cmdline-tools`; Gradle/Flutter emitted a license-status
-  warning. This does not necessarily block the build; result recorded above.
-- Disk space is tight (~2.8 GB free at build time); see `PROGRESS.md`.
+  warning. This does not block the build.
+- Disk space is tight (~2.7 GB free after testing); see `PROGRESS.md`.

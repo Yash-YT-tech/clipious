@@ -67,7 +67,11 @@ Persistence: Sembast+sqflite (main isolate) / JSON files (WorkManager isolate)
 | T-15 | BUG-012, BUG-013 | Document cleartext and credential-storage trade-offs | Low | DONE (docs) | — |
 | T-16 | — | Physical-device checklist and installation guide | Low | DONE (docs) | — |
 | T-17 | BUG-015, BUG-016 | Fix/provide test server for integration tests | Medium | DEFERRED | — |
-| T-18 | — | Device installation and playback verification | — | BLOCKED (no device) | — |
+| T-18 | — | Device installation and playback verification | — | DONE (tablet) / phone pending | `TEST.md` §6 |
+| T-19 | BUG-017 | Fix comments schema (`authorThumbnail`) and add tests | Medium | DONE | `499b6ca` |
+| T-20 | BUG-018 | Fix `youtu.be` intent filter / remove autoVerify | Low | DONE | `3a581a7` |
+| T-21 | BUG-019 | DASH fallback for live streams; stop stale playback | Medium | DONE (client) / live blocked server-side | `705bc7c` |
+| T-22 | BUG-020…022 | Document media-session, startup and 533 dp findings | Low | DONE (docs) | — |
 
 Dependencies: T-03…T-11 depend on T-01/T-02; T-13 depends on T-03…T-12; T-14 depends on T-13;
 T-18 depends on T-14 and owner-connected hardware.
@@ -97,12 +101,12 @@ T-18 depends on T-14 and owner-connected hardware.
 - `flutter analyze` reports no **errors**.
 - New regression tests pass.
 - APK is produced and its path/size recorded.
-- Instance can be added without disabling the advanced test (verified by code path; device
-  confirmation pending).
-- Playback code produces absolute URLs for DASH, HLS, progressive and proxied streams
-  (unit-tested resolver; device confirmation pending).
+- Instance can be added without disabling the advanced test — **confirmed on the tablet**.
+- Playback produces absolute URLs for DASH, HLS, progressive and proxied streams —
+  **confirmed on the tablet** (DASH on/off, proxy+DASH).
 - All nine project documents exist with real content.
-- Remaining device tests are explicitly marked NOT TESTED.
+- Remaining device tests are explicitly marked NOT TESTED (phone, auth, live, network-loss
+  partial).
 
 ## 8. Milestones
 
@@ -116,7 +120,7 @@ T-18 depends on T-14 and owner-connected hardware.
 | M5 Regression tests | DONE |
 | M6 APK build | DONE (arm64 profile APK verified) |
 | M7 Documentation/handover | DONE |
-| M8 Physical-device verification | BLOCKED / owner action |
+| M8 Physical-device verification | PARTIAL: tablet PASS (except live); phone and auth pending |
 
 ## 9. Deferred work
 
@@ -124,4 +128,8 @@ T-18 depends on T-14 and owner-connected hardware.
 - Restrict cleartext traffic or add a user-configurable network security policy.
 - Restore a runnable integration-test environment (separate Invidious at `localhost:3000`,
   dedicated user) or rewrite tests against mocks/fixtures.
-- Upstream the relative-URL fix (requires owner authorisation).
+- Upstream the relative-URL, comments and link fixes (requires owner authorisation).
+- Phone verification (the tablet pass is the reference).
+- Live playback: correct the Invidious DASH manifest (`PTNaNS`) or enable HLS server-side.
+- Performance: investigate the ~18–28 s cold start on the Lenovo tablet.
+- Tablet layout: decide whether a 533 dp device should use tablet views (currently phone).

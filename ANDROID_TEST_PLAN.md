@@ -1,6 +1,8 @@
 # ANDROID_TEST_PLAN — automated device verification
 
 Created: 2026-10-24
+**Execution status:** tablet run completed (Lenovo TB-8505F, Android 10). Results and evidence
+are in `TEST.md` §6. Phone, auth and live-stream tests remain pending/blocked.
 Device: tablet serial `HA1D09AS`
 App under test: Clipious `1.22.15` (`com.github.lamarios.clipious` unless the audit package is used)
 Server: `http://192.168.1.4:5566` (LAN) or `http://100.109.64.77:5566` (Tailscale)

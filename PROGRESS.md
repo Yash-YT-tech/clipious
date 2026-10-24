@@ -1,11 +1,12 @@
 # PROGRESS
 
-Last updated: 2026-10-24 (session 1)
+Last updated: 2026-10-24 (session 2)
 
 ## Current phase
 
-Phases 0–11 complete. APK built and verified; documentation/handover complete.
-Phase 12 (device verification) is pending owner action — no Android device was connected.
+Phases 0–11 complete. Physical-device verification was performed on the connected tablet
+(Lenovo TB-8505F, Android 10) and new defects were fixed (comments, `youtu.be` links, live
+fallback). The phone was not connected, so phone verification remains pending.
 
 ## Environment baseline (recorded before changes)
 
@@ -75,10 +76,27 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 | Check | Result |
 |---|---|
 | `flutter analyze` | 364 issues, **0 errors** (all pre-existing info/warnings) |
-| New tests (`url_utils`, `handle_response`) | 16/16 pass |
+| New tests (`url_utils`, `handle_response`, `comments`) | 21/21 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,512,835 bytes, sha256 `58537dbf…ca458`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,512,835 bytes, sha256 `4fc439e3…47b81`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation; live streams BLOCKED by server manifest. See `TEST.md` §6 |
+| Phone device tests | NOT RUN (phone not connected) |
+
+## Device verification summary
+
+- Device: Lenovo TB-8505F, Android 10 (API 29), arm64-v8a, 800×1280 @ 240 dpi (533 dp),
+  2.0 GB free; Clipious was not installed, so the normal package was used.
+- The advanced server test accepted `http://192.168.1.4:5566` (relative-URL fixes verified).
+- VOD playback works with DASH on, DASH off, and Proxy+DASH (`?local=true`); quality switching,
+  audio-only, background playback, media notification, 144p download and offline playback all
+  passed.
+- Comments crashed initially on the live schema and now render after the fix.
+- Live streams remain blocked by the server's DASH manifest (`PTNaNS`); HLS is 403. The app
+  fails gracefully and stops the previous video.
+- `youtu.be` links were fixed in the manifest; the official YouTube app remains the default
+  handler on this device.
+- Cold start is slow (~18–28 s) on this tablet.
 
 ## Build environment (resolved)
 
@@ -91,12 +109,16 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 
 ## Blockers
 
-1. **No physical Android device connected.** `adb devices -l` is empty; phone/tablet checks
-   must be performed by the owner (`TESTING_THINGS.md`).
-2. **Integration test suite not runnable here.** It requires a separate Invidious at
+1. **Phone not connected.** The tablet was tested; the phone still needs the same pass.
+2. **Live streams blocked server-side.** Invidious emits `mediaPresentationDuration="PTNaNS"`
+   in the live DASH manifest and HLS returns 403. Client-side fallback/error handling is in
+   place; server-side manifest correction or HLS enablement is required for live playback.
+3. **Auth/subscriptions/history were skipped on-device** to avoid reading personal data.
+4. **Network-loss search test was partial** (overlay submission not captured).
+5. **Integration test suite not runnable here.** It requires a separate Invidious at
    `localhost:3000` with user `test`/`test` and deletes subscriptions/history in teardown;
    running it against the owner's account would destroy data.
-3. **Build workarounds are workspace-specific.** A clean machine needs a full JDK (with
+6. **Build workarounds are workspace-specific.** A clean machine needs a full JDK (with
    `jlink`) and a real NDK, or the documented shims. The APK is profile/debug-signed, not a
    production release.
 
@@ -115,11 +137,20 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `aed4e97` docs: record final APK hash, proxy DASH behavior and test counts
 - `9a2f145` docs: record the final documentation commit hash
 - `f065ec1` docs: mark plan milestones complete and correct artifact wording
+- `196b160` docs: research scrcpy/Artemis and add the device test plan
+- `705bc7c` fix(player): fall back to DASH when a live stream has no progressive/HLS URL
+- `499b6ca` fix(comments): accept Invidious's single authorThumbnail field
+- `3a581a7` fix(android): handle youtu.be short links
+- Final device-test documentation commit on this branch.
 
 ## Next actions (owner)
 
-1. Install `dist/clipious-1.22.15-arm64-profile.apk` on the phone and tablet.
-2. Add `http://192.168.1.4:5566` (not `localhost`) and run `TESTING_THINGS.md` §§A–D.
-3. Report failures with test ID, device/Android version, and logcat/app logs.
-4. Optional: build a release APK with your own signing key and a real NDK for daily use.
-5. Optional: upstream the relative-URL fix (requires authorisation).
+1. Install `dist/clipious-1.22.15-arm64-profile.apk` on the phone and run
+   `TESTING_THINGS.md` §§A–D.
+2. Add `http://192.168.1.4:5566` (not `localhost`); the tablet test is the reference.
+3. For live streams, fix the Invidious DASH manifest (omit `mediaPresentationDuration` for
+   dynamic/live) or enable HLS; the client now shows a clear error instead of freezing.
+4. Optional: set Clipious as the handler for YouTube links (the official YouTube app is the
+   current default) and verify `youtu.be` links.
+5. Optional: build a release APK with your own signing key and a real NDK for daily use.
+6. Optional: upstream the relative-URL/comments/link fixes (requires authorisation).

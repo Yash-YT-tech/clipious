@@ -34,6 +34,13 @@ Status values: **FIXED** (change implemented, automated test/build status in `TE
 | BUG-014 | Info | Confirmed | Auth | Cookie login flow is compatible with this instance | NOT A BUG |
 | BUG-015 | Low | Confirmed | Tests | Existing integration tests assume a separate localhost:3000 test server | OPEN (documented) |
 | BUG-016 | Low | Confirmed | Tests | `server_list_settings_test.dart` assumes a public-server list that is never fetched | OPEN (pre-existing) |
+| BUG-017 | High | Confirmed | Comments | Invidious returns `authorThumbnail` (string) but the model casts `authorThumbnails` (list) → Comments tab crashes | FIXED |
+| BUG-018 | Medium | Confirmed | Android links | `youtu.be` filter required `/watch`; `autoVerify` on non-owned domains excluded Clipious as a handler | FIXED |
+| BUG-019 | High | Confirmed/External | Live playback | Live DASH manifest has `mediaPresentationDuration="PTNaNS"`; HLS endpoints return 403 | BLOCKED (server); app fails gracefully |
+| BUG-020 | Low | Confirmed | Playback telemetry | Media-session position stops updating in background/rotation while audio continues | OPEN (documented) |
+| BUG-021 | Low | Confirmed | Performance | Cold start takes ~18–28 s on the Lenovo tablet | OPEN (documented) |
+| BUG-022 | Low | Potential | Tablet UI | 533 dp tablet is classified as phone; tablet-specific layouts are not used | OPEN (documented) |
+| BUG-023 | Info | Confirmed | Deep links | A video whose Invidious response is an empty 200 shows “Could not load the video” | NOT A BUG (server response) |
 
 ---
 
@@ -260,6 +267,86 @@ owner's account. This is a test-environment limitation, not an application defec
 They fail in a clean checkout independently of these changes. Not modified.
 
 ---
+
+## BUG-017 — Comments tab crashes on the current Invidious schema
+
+- **Severity:** High
+- **Class:** Confirmed (device + live API)
+- **Files:** `lib/comments/models/comment.dart`, `lib/comments/models/video_comments.dart`
+- **Device:** Lenovo TB-8505F, Android 10; video `gYpI_LDUbFo`
+
+Invidious returns each comment with `authorThumbnail` (a **string**). The model declared
+`List<ImageObject> authorThumbnails`; generated code did
+`(json['authorThumbnails'] as List<dynamic>)`, which threw
+`type 'Null' is not a subtype of type 'List<dynamic>'` and rendered that raw error in the
+Comments tab. `VideoComments.comments` had the same risk if the API returned null.
+
+**Repair:** `Comment.fromJson` normalizes a single `authorThumbnail` into the list form
+(width/height 0) and defaults a missing list to `[]`; `VideoComments.fromJson` defaults a
+null comments list to `[]`. Five regression tests added. Verified on-device after reinstall:
+authors, timestamps and comment text render.
+
+## BUG-018 — YouTube short links cannot open Clipious
+
+- **Severity:** Medium
+- **Class:** Confirmed (manifest + device)
+- **Files:** `android/app/src/main/AndroidManifest.xml`
+
+The `youtu.be` data element required `pathPrefix="/watch"`, but short links are
+`https://youtu.be/<id>`. The whole filter also used `autoVerify="true"` on youtube.com /
+youtu.be, domains Clipious cannot verify, so Android did not offer it as a handler. Android
+resolved the links to `com.google.android.youtube/.UrlActivity`.
+
+**Repair:** removed the path constraint, removed `autoVerify`, and moved `youtu.be` into a
+separate intent filter so Android does not merge the `/watch` path from the youtube.com
+entries. The app's parser already handled `youtu.be/<id>`. The installed YouTube app is still
+the user's default handler; Clipious is now a valid alternative (the shell
+`query-activities` command only reports the default handler, so implicit-choice behavior was
+not forced).
+
+## BUG-019 — Live streams fail on this Invidious version
+
+- **Severity:** High
+- **Class:** Confirmed / external
+- **Evidence:** `/api/manifest/dash/id/rFZHOHl-L8A` returns a manifest with
+  `type="static"` and `mediaPresentationDuration="PTNaNS"`; ExoPlayer 1.4.1 throws
+  `NumberFormatException: For input string: "PTNaNS"`. `/api/manifest/hls_variant/...` and
+  `/api/manifest/hls_playlist/...` return **403**. The live video has `hlsUrl: null`,
+  zero `formatStreams`, and only `dashUrl`.
+
+**Repair (client):** when there is no HLS/progressive source but a `dashUrl` exists, use DASH
+even if the user disabled it. On failure, dispose the old controller and show the error, so
+the previous video does not keep playing behind a mismatched title. Live playback itself
+remains blocked until the server emits a valid DASH manifest (omit `mediaPresentationDuration`
+for dynamic manifests) or enables HLS.
+
+## BUG-020 — Stale media-session position
+
+- **Severity:** Low
+- **Class:** Confirmed
+- **Evidence:** After home/rotation, `dumpsys media_session` kept `position=159079` with no
+  timestamp updates, while `media.audio_flinger` showed an active track and the internal
+  position had advanced to 208 s (revealed when a media key paused it). Audio continued.
+
+Not fixed; affects progress reporting/UI only on this Android 10 device.
+
+## BUG-021 — Slow cold start
+
+First draw took **17.7 s** (`ActivityTaskManager: Fully drawn … +17s682ms`); later cold starts
+took ~20–28 s. The app loads a large profile engine, initializes the DB/notifications and
+fetches home data. Not fixed; performance investigation recommended.
+
+## BUG-022 — 533 dp tablet uses the phone layout
+
+`getDeviceType()` uses `shortestSide < 600`. The Lenovo panel is 800×1280 at 240 dpi =
+**533 dp**, so it is classified as a phone. Portrait uses one column; landscape uses two
+columns and full-screen playback. Tablet-specific views/sidebar are not activated. This is a
+design threshold choice, not a crash; documented for the owner.
+
+## BUG-023 — Empty video response for a deep link
+
+`GET /api/v1/videos/jNQXAC9IVRw` returns **HTTP 200 with Content-Length 0** on this instance.
+The app shows “Could not load the video”. This is a server response, not a client parsing bug.
 
 ## Investigated and found acceptable
 

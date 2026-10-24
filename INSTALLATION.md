@@ -23,7 +23,7 @@ libraries are packaged unstripped. A production release requires your own signin
 | Build command | `bash -c 'source .tooling/env.sh && flutter build apk --profile --split-per-abi --target-platform android-arm64 --no-pub --no-tree-shake-icons'` |
 | APK path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,512,835 bytes (231.3 MiB) |
-| SHA-256 | `58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458` |
+| SHA-256 | `4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81` |
 | Package ID | `com.github.lamarios.clipious` |
 | Version | `1.22.15`, versionCode `60773` |
 | Build mode | **profile** (AOT, debug-signed, installable) |
@@ -38,13 +38,18 @@ Verify locally:
 ls -lh dist/clipious-1.22.15-arm64-profile.apk
 sha256sum dist/clipious-1.22.15-arm64-profile.apk
 # Expected:
-# 58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458
+# 4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81
 ```
 
 The APK was verified with the Android SDK tools: `aapt2 dump badging` reports
 `package name='com.github.lamarios.clipious' versionCode='60773' versionName='1.22.15'`,
 `targetSdkVersion='36'`, `native-code: 'arm64-v8a'`; `apksigner verify` succeeds with the
 Android debug certificate.
+
+This APK was installed and exercised on a **Lenovo TB-8505F (Android 10, arm64)**. Server
+setup, search, channels/playlists, VOD playback (DASH/progressive/proxy), quality switching,
+audio-only, background playback, 144p download, offline playback and comments passed. Live
+streams remain blocked by the instance's invalid live DASH manifest; the phone is untested.
 
 A debug APK was also built successfully but is ~696 MB (debug engine + Vulkan validation
 layer) and was removed to conserve disk space. Rebuild it only when verbose debug logs are
@@ -219,8 +224,9 @@ the NDK; `android/app/build.gradle` only uses the local shim when `.tooling/ndk`
   `--target-platform android-arm`.
 - The APK is a profile build signed with the Android debug key. It is not suitable for
   distribution; use your own release key for that.
-- The APK is ~210 MiB because `ffmpeg-kit-full` and the Flutter engine are bundled
+- The APK is ~231 MiB because `ffmpeg-kit-full` and the Flutter engine are bundled
   unstripped. A release build with a real NDK strip tool would be much smaller.
 - HTTP is used for the local instance. On untrusted networks, prefer Tailscale or an HTTPS
   reverse proxy; do not expose Invidious publicly without authentication and TLS.
-- Physical-device behaviour is not yet verified; use `TESTING_THINGS.md`.
+- The tablet was tested; the phone is not. Live streams are blocked by the server-side DASH
+  manifest. Use `TESTING_THINGS.md` for the remaining checks.

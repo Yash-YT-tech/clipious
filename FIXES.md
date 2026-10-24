@@ -107,6 +107,35 @@ Commit hashes are filled in after the incremental commits.
 - **Tests:** Static analysis; notification rendering requires a device.
 - **Regression risk:** Very low.
 
+## FIX-011 — Comments schema compatibility (BUG-017)
+
+- **Files:** `lib/comments/models/comment.dart`, `lib/comments/models/video_comments.dart`,
+  `test/comments/comment_json_test.dart`
+- **Change:** normalize Invidious's singular `authorThumbnail` into `authorThumbnails`, default
+  missing lists to `[]`, and tolerate a null top-level comments array.
+- **Tests:** 5 new unit tests; on-device Comments tab verified after reinstall.
+- **Commit:** `499b6ca`.
+
+## FIX-012 — YouTube short-link intent filter (BUG-018)
+
+- **Files:** `android/app/src/main/AndroidManifest.xml`
+- **Change:** remove the `/watch` path from `youtu.be`, remove `autoVerify` (Clipious cannot
+  verify YouTube domains), and keep `youtu.be` in a separate filter.
+- **Verification:** the installed resolver table now shows a separate `youtu.be` filter with
+  no path. The official YouTube app remains the device's default handler.
+- **Commit:** `3a581a7`.
+
+## FIX-013 — Live-stream DASH fallback and stale playback (BUG-019)
+
+- **Files:** `lib/player/states/video_player.dart`
+- **Change:** when there is no HLS/progressive source but `dashUrl` exists, use DASH even if the
+  user disabled it; if no source exists, dispose the old controller and emit an error instead
+  of leaving the previous video playing.
+- **Verification:** on-device, the app now attempts the live DASH manifest, shows an error for
+  the server's `PTNaNS` manifest, and stops the previous video. Live playback itself remains
+  blocked server-side.
+- **Commit:** `705bc7c`.
+
 ## Commit map
 
 | Fix | Commit |
@@ -125,6 +154,10 @@ Commit hashes are filled in after the incremental commits.
 | Build environment (local toolchain, NDK/cache policy) | `ce94c94` |
 | Jetifier disabled for AndroidX-only build | `636872b` |
 | Research/audit/handover documentation | `8622df1`, `aed4e97` |
+| FIX-011 comment schema | `499b6ca` |
+| FIX-012 youtu.be links | `3a581a7` |
+| FIX-013 live DASH/stale playback | `705bc7c` |
+| scrcpy/Artemis research + test plan | `196b160` |
 
 ## Incomplete / not fixed
 
@@ -134,3 +167,7 @@ Commit hashes are filled in after the incremental commits.
 | BUG-013 plaintext credentials | Larger security hardening; not required for functionality. Documented. |
 | BUG-015 integration tests | Need a dedicated Invidious test server/user; running them would delete real subscriptions/history. |
 | BUG-016 stale public-server tests | Pre-existing test defect, unrelated to the integration; left untouched. |
+| BUG-019 live playback | Server emits an invalid DASH manifest (`PTNaNS`) and HLS is 403; app-side fallback/error handling added, but live video remains blocked. |
+| BUG-020 stale media-session position | Audio continues; progress reporting only. Needs an audio_service progress update fix. |
+| BUG-021 slow cold start | Performance investigation, not a functional failure. |
+| BUG-022 533 dp tablet classification | Threshold choice; changing it affects large phones and other layouts. |
