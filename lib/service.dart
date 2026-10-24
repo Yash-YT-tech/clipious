@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,7 @@ import 'package:clipious/settings/models/errors/invidious_service_error.dart';
 import 'package:clipious/settings/models/errors/missing_software_key.dart';
 import 'package:clipious/settings/models/errors/unreacheable_server.dart';
 import 'package:clipious/utils/models/imgur_error.dart';
+import 'package:clipious/utils/url_utils.dart';
 import 'package:clipious/utils/video_post_processing.dart';
 import 'package:clipious/videos/models/db/progress.dart';
 import 'package:clipious/videos/models/dearrow.dart';
@@ -74,11 +76,13 @@ const imgurClientId = 'Client-ID 2cfbc27ce77879d';
 
 const maxPing = 9007199254740991;
 
+const requestTimeout = Duration(seconds: 30);
+
 class Service {
   final log = Logger('Service');
   final Client httpClient;
 
-  Service() : httpClient = http.Client();
+  Service() : httpClient = _TimeoutClient(http.Client(), requestTimeout);
 
   String urlFormatForLog(Uri? uri) {
     return kDebugMode ? uri.toString() : '${uri?.replace(host: 'xxxxxxxxxx')}';
@@ -90,8 +94,17 @@ class Service {
         "Response from ${response.request?.method} ${urlFormatForLog(response.request?.url)}, status: ${response.statusCode}");
 
     if (body.isNotEmpty) {
-      var decoded = jsonDecode(body);
-      String? error;
+      dynamic decoded;
+      try {
+        decoded = jsonDecode(body);
+      } on FormatException {
+        log.severe(
+            'Non JSON response from ${urlFormatForLog(response.request?.url)}, status: ${response.statusCode}');
+        throw InvidiousServiceError(
+            'Unexpected response from the server (HTTP ${response.statusCode})');
+      }
+
+      dynamic error;
       try {
         Map<String, dynamic> errorFinder = decoded as Map<String, dynamic>;
         error = errorFinder.containsKey('error') ? decoded['error'] : null;
@@ -101,13 +114,20 @@ class Service {
 
       if (error != null) {
         log.severe('Error while calling service: $error');
-        throw InvidiousServiceError(error);
+        throw InvidiousServiceError(error.toString());
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        log.severe(
+            'Error making request to ${urlFormatForLog(response.request?.url)}, status: ${response.statusCode}');
+        throw InvidiousServiceError(
+            'Couldn\'t make request, response code: ${response.statusCode}');
       }
 
       return decoded;
-    } else if (response.statusCode < 200 || response.statusCode >= 400) {
+    } else if (response.statusCode < 200 || response.statusCode >= 300) {
       log.severe(
-          'Error making request to ${response.request?.url}, \n status: ${response.statusCode}, \n Body: ${response.body}');
+          'Error making request to ${urlFormatForLog(response.request?.url)}, \n status: ${response.statusCode}, \n Body: ${response.body}');
       throw InvidiousServiceError(
           'Couldn\'t make request, response code: ${response.statusCode}');
     }
@@ -126,7 +146,7 @@ class Service {
       Server? serverOverride}) async {
     try {
       final server = serverOverride ?? (await db.getCurrentlySelectedServer());
-      String url = '${(server).url}$baseUrl';
+      String url = '${normalizeInstanceUrl(server.url)}$baseUrl';
 
       pathParams?.forEach((key, value) {
         url = url.replaceAll(key, value);
@@ -206,7 +226,7 @@ class Service {
             .firstWhere((element) => element.startsWith('SID='));
       } else {
         throw InvidiousServiceError(
-            'wrong error code (${response.statusCode}) or no cookie headers: ${response.headers['set-cookie']}');
+            'wrong error code (${response.statusCode}) or no cookie headers');
       }
     } catch (err, stacktrace) {
       if (err is InvidiousServiceError) {
@@ -837,4 +857,19 @@ class ServerRequest {
   final Map<String, String> headers;
 
   ServerRequest({required this.uri, required this.headers});
+}
+
+/// Applies a timeout to every request. Dart's HTTP client has no timeout by
+/// default, so an unreachable or wedged instance would otherwise leave the UI
+/// loading indefinitely.
+class _TimeoutClient extends http.BaseClient {
+  final http.Client _inner;
+  final Duration timeout;
+
+  _TimeoutClient(this._inner, this.timeout);
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request).timeout(timeout);
+  }
 }

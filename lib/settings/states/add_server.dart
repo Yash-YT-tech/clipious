@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:clipious/settings/models/errors/server_already_exists.dart';
-import 'package:clipious/settings/models/errors/wrong_thumbnail_url.dart';
+import 'package:clipious/utils/url_utils.dart';
 
 import '../../globals.dart';
 import '../models/db/server.dart';
@@ -34,7 +34,7 @@ class AddServerCubit extends Cubit<AddServerState> {
   Future<Server?> validateServer() async {
     emit(state.copyWith(loading: true));
     try {
-      var serverUrl = urlController.value.text.trim();
+      var serverUrl = normalizeInstanceUrl(urlController.value.text);
 
       final existingServer = db.getServer(serverUrl);
 
@@ -42,26 +42,13 @@ class AddServerCubit extends Cubit<AddServerState> {
         throw ServerAlreadyExists();
       }
 
-      if (serverUrl.endsWith("/")) {
-        serverUrl = serverUrl.substring(0, serverUrl.length - 1);
-      }
-
       await service.validateServer(serverUrl, state.headers);
 
       if (state.advancedTest) {
         Server server = Server(url: serverUrl, customHeaders: state.headers);
-        final video =
-            await service.getVideo('dQw4w9WgXcQ', serverOverride: server);
-
-        final invalidThumbnailUrls = video.videoThumbnails
-            .map(
-              (e) => e.url,
-            )
-            .any((u) => u.startsWith("/"));
-
-        if (invalidThumbnailUrls) {
-          throw WrongThumbnailUrl();
-        }
+        // Parsing a real video validates the JSON schema used for playback.
+        // Relative media/thumbnail URLs are supported and resolved by the app.
+        await service.getVideo('dQw4w9WgXcQ', serverOverride: server);
       }
 
       return Server(url: serverUrl, customHeaders: state.headers);
@@ -87,18 +74,10 @@ class AddServerCubit extends Cubit<AddServerState> {
   }
 
   bool get validUrl {
-    var regExp = RegExp(r'^(http://|https://)');
-    if (!urlController.text.trim().startsWith(regExp)) {
-      return false;
-    }
-
-    final urlWithoutProtocol = urlController.text.replaceAll(regExp, "").trim();
-
-    if (urlWithoutProtocol.isEmpty) {
-      return false;
-    }
-
-    return true;
+    final uri = Uri.tryParse(urlController.text.trim());
+    return uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
   }
 
   setAdvancedTest(bool advancedTest) {
