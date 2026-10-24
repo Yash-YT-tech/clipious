@@ -18,6 +18,27 @@ void main() {
     });
   });
 
+  group('addLocalProxyParameter', () {
+    test('adds the parameter to a URL without a query', () {
+      expect(addLocalProxyParameter('/api/manifest/dash/id/abc'),
+          '/api/manifest/dash/id/abc?local=true');
+    });
+
+    test('appends to an existing query', () {
+      expect(addLocalProxyParameter('/api/manifest/dash/id/abc?foo=bar'),
+          '/api/manifest/dash/id/abc?foo=bar&local=true');
+    });
+
+    test('does not duplicate an existing local parameter', () {
+      expect(addLocalProxyParameter('/x?local=true'), '/x?local=true');
+      expect(addLocalProxyParameter('/x?local=1&a=b'), '/x?local=1&a=b');
+    });
+
+    test('leaves empty values unchanged', () {
+      expect(addLocalProxyParameter(''), '');
+    });
+  });
+
   group('resolveInstanceUrl', () {
     const server = 'http://192.168.1.4:5566';
 

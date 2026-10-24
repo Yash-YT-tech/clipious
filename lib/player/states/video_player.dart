@@ -280,9 +280,9 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
 
         String? rawVideoUrl;
         if (isHls) {
-          rawVideoUrl = hlsUrl;
+          rawVideoUrl = useProxy ? addLocalProxyParameter(hlsUrl) : hlsUrl;
         } else if (useDash) {
-          rawVideoUrl = dashUrl;
+          rawVideoUrl = useProxy ? addLocalProxyParameter(dashUrl) : dashUrl;
         } else {
           rawVideoUrl = formatStream?.url;
         }
