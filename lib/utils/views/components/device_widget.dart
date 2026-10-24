@@ -20,7 +20,8 @@ class DeviceWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceOrientation = orientation ?? getOrientation();
-    var deviceType = forcedTyped ?? getDeviceType();
+    var deviceType = forcedTyped ??
+        (useWideLayout(context) ? DeviceType.tablet : DeviceType.phone);
     return switch (deviceType) {
       (DeviceType.phone) => phone,
       (DeviceType.tablet) =>

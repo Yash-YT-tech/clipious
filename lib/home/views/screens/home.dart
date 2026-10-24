@@ -105,7 +105,7 @@ class _MainScreenState extends State<MainContentScreen> {
         selectedIndex = 0;
       }
 
-      final deviceType = getDeviceType();
+      final wideLayout = useWideLayout(context);
 
       return allowedPages.isEmpty
           ? Scaffold(
@@ -136,8 +136,7 @@ class _MainScreenState extends State<MainContentScreen> {
                 return Scaffold(
                     // so we rebuild the view if the server changes
                     backgroundColor: colorScheme.surface,
-                    bottomNavigationBar: deviceType == DeviceType.phone &&
-                            allowedPages.length >= 2
+                    bottomNavigationBar: !wideLayout && allowedPages.length >= 2
                         ? NavigationBar(
                             onDestinationSelected: tabsRouter.setActiveIndex,
                             selectedIndex: tabsRouter.activeIndex,
@@ -181,8 +180,7 @@ class _MainScreenState extends State<MainContentScreen> {
                     ),
                     body: Row(
                       children: [
-                        if (deviceType == DeviceType.tablet &&
-                            allowedPages.length > 2)
+                        if (wideLayout && allowedPages.length > 2)
                           OrientationBuilder(
                             builder: (context, orientation) => NavigationRail(
                                 extended:

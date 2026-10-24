@@ -52,7 +52,6 @@ class _SearchScreenState extends State<SearchScreen> {
     var settings = context.read<SettingsCubit>();
     return OrientationBuilder(
       builder: (context, orientation) {
-        final deviceType = getDeviceType();
         final deviceOrientation = getOrientation();
         return BlocProvider(
           create: (context) => SearchCubit<SearchState>(
@@ -73,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     final tabsController = AutoTabsRouter.of(context);
                     return Scaffold(
                       bottomNavigationBar:
-                          state.showResults && deviceType == DeviceType.phone
+                          state.showResults && !useWideLayout(context)
                               ? NavigationBar(
                                   selectedIndex: tabsController.activeIndex,
                                   onDestinationSelected:
@@ -171,7 +170,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 )
                               : Row(
                                   children: [
-                                    if (deviceType == DeviceType.tablet)
+                                    if (useWideLayout(context))
                                       NavigationRail(
                                         extended: deviceOrientation ==
                                             Orientation.landscape,

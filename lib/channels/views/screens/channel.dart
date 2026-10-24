@@ -26,7 +26,7 @@ class ChannelScreen extends StatelessWidget {
             ChannelCubit(ChannelController(channelId: channelId)),
         child: BlocBuilder<ChannelCubit, ChannelController>(
           builder: (context, channelState) {
-            var deviceType = getDeviceType();
+            var wideLayout = useWideLayout(context);
             return AutoTabsRouter.tabBar(
                 key: ValueKey(channelState.channel),
                 physics: const NeverScrollableScrollPhysics(),
@@ -64,8 +64,7 @@ class ChannelScreen extends StatelessWidget {
                             ],
                     ),
                     backgroundColor: colorScheme.surface,
-                    bottomNavigationBar: deviceType == DeviceType.tablet ||
-                            channelState.loading
+                    bottomNavigationBar: wideLayout || channelState.loading
                         ? null
                         : FadeIn(
                             duration: motionShort,
@@ -96,7 +95,7 @@ class ChannelScreen extends StatelessWidget {
                         bottom: false,
                         child: Row(
                           children: [
-                            if (deviceType == DeviceType.tablet)
+                            if (wideLayout)
                               NavigationRail(
                                 extended:
                                     getOrientation() == Orientation.landscape,

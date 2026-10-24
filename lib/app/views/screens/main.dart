@@ -16,16 +16,15 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final deviceType = getDeviceType();
       final orientation =
           context.select((PlayerCubit value) => value.state.orientation);
 
       final bool globalLoading =
           context.select((AppCubit value) => value.state.globalLoading);
-      final playerHorizontalPosition = orientation == Orientation.landscape &&
-              deviceType == DeviceType.tablet
-          ? getFractionOfAvailableSpace(context, tabletMiniPlayerFraction)
-          : const Size(0, 0);
+      final playerHorizontalPosition =
+          orientation == Orientation.landscape && useWideLayout(context)
+              ? getFractionOfAvailableSpace(context, tabletMiniPlayerFraction)
+              : const Size(0, 0);
       var colors = Theme.of(context).colorScheme;
       return Container(
         color: colors.surface,

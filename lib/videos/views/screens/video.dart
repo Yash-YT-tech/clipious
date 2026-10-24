@@ -72,8 +72,6 @@ class VideoScreen extends StatelessWidget {
     var locals = AppLocalizations.of(context)!;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-    final deviceType = getDeviceType();
-
     var downloadManager = context.read<DownloadManagerCubit>();
 
     var player = context.read<PlayerCubit>();
@@ -99,8 +97,8 @@ class VideoScreen extends StatelessWidget {
         builder: (context, videoState) {
           return OrientationBuilder(builder: (context, orientation) {
             // we only show the tablet specific view for landscape tablets, phone portrait view is fine here
-            var showTabletView = deviceType == DeviceType.tablet &&
-                getOrientation() == Orientation.landscape;
+            var showTabletView =
+                useWideLayout(context) && orientation == Orientation.landscape;
 
             var destinations = List.of(<Widget>[
               NavigationDestination(
@@ -122,7 +120,7 @@ class VideoScreen extends StatelessWidget {
                     VideoInfoRoute(
                         video: videoState.video,
                         dislikes: videoState.dislikes,
-                        titleAndChannelInfo: deviceType == DeviceType.phone),
+                        titleAndChannelInfo: !useWideLayout(context)),
                     if (!distractionFreeMode)
                       CommentsRoute(video: videoState.video),
                     if (!distractionFreeMode)

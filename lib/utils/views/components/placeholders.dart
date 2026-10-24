@@ -657,7 +657,7 @@ class ChannelPlaceHolder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var deviceType = getDeviceType();
+    var wideLayout = useWideLayout(context);
     var colors = Theme.of(context).colorScheme;
     return AnimatedPlaceHolder(
         child: Padding(
@@ -666,7 +666,7 @@ class ChannelPlaceHolder extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: deviceType == DeviceType.phone ? 100 : 230,
+            height: wideLayout ? 230 : 100,
             decoration: BoxDecoration(
                 color: colors.secondaryContainer,
                 borderRadius: BorderRadius.circular(10)),

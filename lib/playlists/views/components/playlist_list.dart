@@ -35,7 +35,7 @@ class PlaylistList extends StatelessWidget {
       child: BlocBuilder<PlaylistListCubit, PlaylistListState>(
         builder: (context, state) {
           var cubit = context.read<PlaylistListCubit>();
-          var deviceType = getDeviceType();
+          var wideLayout = useWideLayout(context);
           return Stack(
             children: [
               state.error.isNotEmpty
@@ -89,8 +89,7 @@ class PlaylistList extends StatelessWidget {
                                         state.playlists.length
                                     ? const TvPlaylistPlaceHolder()
                                     : PlaylistInList(
-                                        isTablet:
-                                            deviceType == DeviceType.tablet,
+                                        isTablet: wideLayout,
                                         thumbnailsHeight: 160,
                                         key: ValueKey(
                                             state.playlists[index].playlistId),

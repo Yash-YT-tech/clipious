@@ -21,13 +21,26 @@ import 'videos/models/video.dart';
 
 const phoneMax = 600;
 const tabletPortraitMax = 900;
+const wideLayoutMinHeight = 480;
+
+/// Layout policy, separate from device/feature classification.
+///
+/// A compact-width phone stays in the phone shell in portrait. A wide window
+/// (including a 533 dp tablet in landscape) gets the two-pane/wide shell when
+/// there is enough vertical room. Wide-but-short phone windows stay compact.
+bool useWideLayoutForSize(Size size) {
+  if (size.shortestSide >= phoneMax) {
+    return true;
+  }
+  return size.width >= phoneMax && size.height >= wideLayoutMinHeight;
+}
+
+bool useWideLayout(BuildContext context) =>
+    useWideLayoutForSize(MediaQuery.sizeOf(context));
 
 var log = Logger('Utils');
 
 enum DeviceType { phone, tablet, tv }
-
-double tabletMaxVideoWidth =
-    getDeviceType() == DeviceType.phone ? double.infinity : 500;
 
 bool isPhoneLandscape(BuildContext context) {
   var size = MediaQuery.sizeOf(context);

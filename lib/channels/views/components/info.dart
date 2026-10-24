@@ -22,7 +22,7 @@ class ChannelInfo extends StatelessWidget {
     ColorScheme colors = Theme.of(context).colorScheme;
     var textTheme = Theme.of(context).textTheme;
 
-    final deviceType = getDeviceType();
+    final wideLayout = useWideLayout(context);
     List<Widget> widgets = [
       Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,7 +100,7 @@ class ChannelInfo extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                   horizontal: innerHorizontalPadding),
               child: SizedBox(
-                height: deviceType == DeviceType.phone ? 100 : 230,
+                height: wideLayout ? 230 : 100,
                 child: Thumbnail(
                     width: double.infinity,
                     thumbnails: [bannerUrl],

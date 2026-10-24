@@ -30,7 +30,8 @@ class PlaylistInnerView extends StatelessWidget {
       final playlistState = cubit.state;
       return Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: tabletMaxVideoWidth),
+          constraints: BoxConstraints(
+              maxWidth: useWideLayout(context) ? 500 : double.infinity),
           child: Column(
             children: [
               Padding(

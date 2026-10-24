@@ -55,15 +55,14 @@ class Player extends StatelessWidget {
         final bool isFullScreen = fullScreen == FullScreenState.fullScreen;
         final double aspectRatio =
             context.select((PlayerCubit value) => value.state.aspectRatio);
-        final deviceType = getDeviceType();
+        final wideLayout = useWideLayout(context);
         final orientation =
             context.select((PlayerCubit value) => value.state.orientation);
 
-        final playerHorizontalPosition = orientation == Orientation.landscape &&
-                isMini &&
-                deviceType == DeviceType.tablet
-            ? getFractionOfAvailableSpace(context, tabletMiniPlayerFraction)
-            : const Size(0, 0);
+        final playerHorizontalPosition =
+            orientation == Orientation.landscape && isMini && wideLayout
+                ? getFractionOfAvailableSpace(context, tabletMiniPlayerFraction)
+                : const Size(0, 0);
 
         Widget videoPlayer = showPlayer
             ? BlocBuilder<PlayerCubit, PlayerState>(
@@ -204,10 +203,7 @@ class Player extends StatelessWidget {
                                                 fit: isMini
                                                     ? FlexFit.loose
                                                     : FlexFit.tight,
-                                                flex: deviceType ==
-                                                        DeviceType.tablet
-                                                    ? 2
-                                                    : 1,
+                                                flex: wideLayout ? 2 : 1,
                                                 child: Column(
                                                   mainAxisSize: isMini
                                                       ? MainAxisSize.min

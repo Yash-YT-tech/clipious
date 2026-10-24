@@ -27,7 +27,8 @@ class ManageSubscriptionsScreen extends StatelessWidget {
         child: Center(
           child: Container(
             alignment: Alignment.topCenter,
-            constraints: BoxConstraints(maxWidth: tabletMaxVideoWidth),
+            constraints: BoxConstraints(
+                maxWidth: useWideLayout(context) ? 500 : double.infinity),
             child: BlocProvider(
               create: (context) =>
                   ManageSubscriptionCubit(const ManageSubscriptionsState()),
