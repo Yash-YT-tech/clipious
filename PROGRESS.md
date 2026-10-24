@@ -112,7 +112,7 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `636872b` build: disable Jetifier for the AndroidX-only dependency set
 - `8622df1` docs: add research, audit, repair and device-handover documentation
 - `1fb7aa1` fix(player): keep proxy-mode HLS/DASH segments on the instance
-- Final documentation update commit on this branch.
+- `aed4e97` docs: record final APK hash, proxy DASH behavior and test counts
 
 ## Next actions (owner)
 

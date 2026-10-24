@@ -124,7 +124,7 @@ Commit hashes are filled in after the incremental commits.
 | Test helper fix | `8d991fb` |
 | Build environment (local toolchain, NDK/cache policy) | `ce94c94` |
 | Jetifier disabled for AndroidX-only build | `636872b` |
-| Research/audit/handover documentation | `8622df1`, final docs commit |
+| Research/audit/handover documentation | `8622df1`, `aed4e97` |
 
 ## Incomplete / not fixed
 
