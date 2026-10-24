@@ -95,6 +95,18 @@ Source evidence that `local` is an API query flag:
 `src/invidious/routes/api/v1/videos.cr` (upstream `master`, fetched 2026-10-24) reads
 `env.params.query["local"]?` and passes `proxy` into the JSON serializer.
 
+Additional media checks (2026-10-24):
+
+- `/api/manifest/dash/id/<id>` returns **302** to `/companion/api/manifest/dash/id/<id>`;
+  following the redirect returns **200** `application/dash+xml`.
+- Without `local`, the DASH manifest `BaseURL` values are absolute `googlevideo.com` URLs.
+- With `?local=true`, the manifest `BaseURL` values are local
+  `/companion/videoplayback?...&host=...` paths. Proxy mode therefore requires the
+  parameter on the manifest URL.
+- A relative progressive stream from `?local=true` served `206 Partial Content`
+  (`Content-Range: bytes 0-1023/11829048`, `video/mp4`).
+- A relative caption URL served `200 text/vtt`.
+
 The current API documentation does **not** document `local`:
 <https://docs.invidious.io/api/> (accessed 2026-10-24). This is consistent with the
 parameter being legacy/undocumented but still honoured by the deployed version.

@@ -41,11 +41,11 @@ Command:
 bash -c 'source .tooling/env.sh && flutter test test/utils/url_utils_test.dart test/service/handle_response_test.dart'
 ```
 
-Result: **12/12 passed** (`+12: All tests passed!`).
+Result: **16/16 passed** (`+16: All tests passed!`).
 
 | File | Cases | Result |
 |---|---|---|
-| `test/utils/url_utils_test.dart` | 7 | PASS |
+| `test/utils/url_utils_test.dart` | 11 | PASS |
 | `test/service/handle_response_test.dart` | 5 | PASS |
 
 Server-independent existing tests:
@@ -102,6 +102,11 @@ Target: `http://localhost:5566`, Invidious `2026.08.04-48c6110`.
 | Authenticated history | `/api/v1/auth/history` | 200 |
 | Double slash | `/ /api/v1/stats` (two slashes) | 302 → confirms trailing-slash bug |
 | Thumbnail | `/vi/dQw4w9WgXcQ/maxres.jpg` | 200 `image/jpeg` |
+| DASH manifest | `/api/manifest/dash/id/:id` | 302 → `/companion/api/manifest/dash/id/:id`; following redirect returns 200 `application/dash+xml` |
+| DASH without local | manifest `BaseURL` | absolute `googlevideo.com` URLs |
+| DASH with local | `/companion/api/manifest/dash/id/:id?local=true` | manifest `BaseURL` = `/companion/videoplayback?...` (local segments) |
+| Proxied progressive stream | `/videoplayback` from `?local=true`, `Range: bytes=0-1023` | 206, `video/mp4`, `Content-Range: bytes 0-1023/11829048` |
+| Captions | relative caption URL from the video response | 200 `text/vtt` |
 
 Credentials were supplied out-of-band for this validation and were not written to any file,
 log, report, or commit.
@@ -130,8 +135,8 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 | Final artifact | Value |
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
-| Size | 220,345,389 bytes (210.1 MiB) |
-| SHA-256 | `d8a1606cdef2f459490e627e80f860c58b11cad333e90e65388ae4343d3af453` |
+| Size | 242,512,835 bytes (231.3 MiB) |
+| SHA-256 | `58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |

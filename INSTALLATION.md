@@ -21,8 +21,8 @@ key (see §11).
 |---|---|
 | Build command | `bash -c 'source .tooling/env.sh && flutter build apk --profile --split-per-abi --target-platform android-arm64 --no-pub --no-tree-shake-icons'` |
 | APK path | `dist/clipious-1.22.15-arm64-profile.apk` |
-| Size | 220,345,389 bytes (210.1 MiB) |
-| SHA-256 | `d8a1606cdef2f459490e627e80f860c58b11cad333e90e65388ae4343d3af453` |
+| Size | 242,512,835 bytes (231.3 MiB) |
+| SHA-256 | `58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458` |
 | Package ID | `com.github.lamarios.clipious` |
 | Version | `1.22.15`, versionCode `60773` |
 | Build mode | **profile** (AOT, debug-signed, installable) |
@@ -37,7 +37,7 @@ Verify locally:
 ls -lh dist/clipious-1.22.15-arm64-profile.apk
 sha256sum dist/clipious-1.22.15-arm64-profile.apk
 # Expected:
-# d8a1606cdef2f459490e627e80f860c58b11cad333e90e65388ae4343d3af453
+# 58537dbf99ddcd741ec5d7b234575caa0e766fd56cdd45300501e5d8281ca458
 ```
 
 The APK was verified with the Android SDK tools: `aapt2 dump badging` reports

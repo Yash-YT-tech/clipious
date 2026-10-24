@@ -57,17 +57,21 @@ an absolute URI.
 - The player only rewrote absolute `https://…googlevideo.com/` URLs when proxy mode was on.
 - DASH is enabled by default (`use-dash` defaults to `true`), so the default path used the
   relative `dashUrl`.
+- `/api/manifest/dash/id/<id>` redirects to `/companion/...`; adding `local=true` changes the
+  manifest `BaseURL` from googlevideo to `/companion/videoplayback`, so proxy mode needs the
+  parameter on the manifest URL.
 - Upstream issue #705 reports "cannot play any video" on Clipious 1.22.15 with a recent
   self-hosted Invidious.
 
 **Impact.** Video playback fails (black screen / player error) for this instance; proxy-mode
 audio-only fails; resolution switching uses relative URLs.
 
-**Repair.** Added `lib/utils/url_utils.dart` (`normalizeInstanceUrl`, `resolveInstanceUrl`)
-and resolved HLS/DASH/progressive/adaptive/caption URLs against the instance origin before
-handing them to players. Added an explicit empty-stream guard.
+**Repair.** Added `lib/utils/url_utils.dart` (`normalizeInstanceUrl`, `resolveInstanceUrl`,
+`addLocalProxyParameter`) and resolved HLS/DASH/progressive/adaptive/caption URLs against the
+instance origin before handing them to players. Proxy-mode HLS/DASH manifests get
+`local=true`. Added an explicit empty-stream guard.
 
-**Regression tests.** `test/utils/url_utils_test.dart` (7 cases).
+**Regression tests.** `test/utils/url_utils_test.dart` (11 cases).
 
 ## BUG-002 — Add-server test falsely rejects self-hosted instances
 

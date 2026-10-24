@@ -22,8 +22,8 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Phone compatibility | UNKNOWN | No device connected | Everything |
 | Tablet compatibility | UNKNOWN | Responsive layouts exist (`getDeviceType`, tablet views) but were not executed | Everything |
 | Security | MEDIUM | No credentials logged after fix; TLS verification not weakened; cleartext and plaintext credential storage documented | Broader hardening (encrypted storage, cleartext scoping) deferred |
-| Regression coverage | MEDIUM | 12 new unit tests; server-independent suite run; analysis error-free | Integration tests not runnable in this environment |
-| Installation reproducibility | MEDIUM | Signed APK exists at `dist/clipious-1.22.15-arm64-profile.apk` (220,345,389 bytes, sha256 `d8a1606c…af453`), package/version/ABI/signature verified; manual and adb instructions documented | Not installed on a device yet; debug signing key differs from store builds; arm64 only |
+| Regression coverage | MEDIUM | 16 new unit tests; server-independent suite run; analysis error-free | Integration tests not runnable in this environment |
+| Installation reproducibility | MEDIUM | Signed APK exists at `dist/clipious-1.22.15-arm64-profile.apk` (242,512,835 bytes, sha256 `58537dbf…ca458`), package/version/ABI/signature verified; manual and adb instructions documented | Not installed on a device yet; debug signing key differs from store builds; arm64 only |
 
 ## What would raise confidence
 

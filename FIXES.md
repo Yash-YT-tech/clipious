@@ -15,14 +15,16 @@ Commit hashes are filled in after the incremental commits.
   - Added `normalizeInstanceUrl()` and `resolveInstanceUrl()` (absolute URLs unchanged,
     relative/absolute-path URLs resolved against the instance, path prefixes preserved).
   - Video: resolve HLS/DASH/progressive URLs, resolution-switch URLs and caption URLs;
+    add `local=true` to HLS/DASH manifests in proxy mode so their segments stay local;
     guard empty `formatStreams`; fall back to progressive if `dashUrl` is absent.
   - Audio-only: resolve progressive and adaptive audio URLs.
   - `Server.headersForUrl()` normalises the base URL before the prefix check, so custom
     headers still apply to resolved URLs.
-- **Tests:** `test/utils/url_utils_test.dart` — 7 cases, all pass.
+- **Tests:** `test/utils/url_utils_test.dart` — 11 cases, all pass.
 - **Regression risk:** Low. Absolute URLs (and therefore public-instance playback) are
   returned unchanged. `isHls`/DASH track selection behaviour is preserved.
-- **Commit:** `553e3ef` (URL resolver, player/audio/artwork; also covers FIX-009/FIX-010).
+- **Commit:** `553e3ef` (URL resolver, player/audio/artwork; also covers FIX-009/FIX-010) and
+  `1fb7aa1` (proxy-mode manifest `local=true`).
 
 ## FIX-002 — Accept relative thumbnails when adding a server (BUG-002)
 
@@ -109,7 +111,7 @@ Commit hashes are filled in after the incremental commits.
 
 | Fix | Commit |
 |---|---|
-| FIX-001 (URL resolver, player/audio/artwork, TV banner) | `553e3ef` |
+| FIX-001 (URL resolver, player/audio/artwork, TV banner) | `553e3ef`, `1fb7aa1` |
 | FIX-002 (add-server validation) | `82e4467` |
 | FIX-003 (downloads) | `bcd7d4e` |
 | FIX-004 (timeouts) | `82e4467` |
@@ -121,7 +123,8 @@ Commit hashes are filled in after the incremental commits.
 | FIX-010 (notification artwork) | `553e3ef` |
 | Test helper fix | `8d991fb` |
 | Build environment (local toolchain, NDK/cache policy) | `ce94c94` |
-| Jetifier disabled for AndroidX-only build | build/docs commit on this branch |
+| Jetifier disabled for AndroidX-only build | `636872b` |
+| Research/audit/handover documentation | `8622df1`, final docs commit |
 
 ## Incomplete / not fixed
 

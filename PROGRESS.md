@@ -75,10 +75,10 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 | Check | Result |
 |---|---|
 | `flutter analyze` | 364 issues, **0 errors** (all pre-existing info/warnings) |
-| New tests (`url_utils`, `handle_response`) | 12/12 pass |
+| New tests (`url_utils`, `handle_response`) | 16/16 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 220,345,389 bytes, sha256 `d8a1606c…af453`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,512,835 bytes, sha256 `58537dbf…ca458`, arm64-v8a, debug-signed, `apksigner verify` OK |
 
 ## Build environment (resolved)
 
@@ -109,7 +109,10 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `1abab50` fix(android): declare POST_NOTIFICATIONS permission
 - `ce94c94` build: keep toolchain caches local and avoid NDK download
 - `8d991fb` test: make TestPlayerCubit.onReady match its async signature
-- Build/docs commit follows this file.
+- `636872b` build: disable Jetifier for the AndroidX-only dependency set
+- `8622df1` docs: add research, audit, repair and device-handover documentation
+- `1fb7aa1` fix(player): keep proxy-mode HLS/DASH segments on the instance
+- Final documentation update commit on this branch.
 
 ## Next actions (owner)
 
