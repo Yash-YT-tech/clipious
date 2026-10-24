@@ -41,6 +41,8 @@ Status values: **FIXED** (change implemented, automated test/build status in `TE
 | BUG-021 | Low | Confirmed | Performance | Cold start takes ~18–28 s on the Lenovo tablet | OPEN (documented) |
 | BUG-022 | Low | Potential | Tablet UI | 533 dp tablet is classified as phone; tablet-specific layouts are not used | OPEN (documented) |
 | BUG-023 | Info | Confirmed | Deep links | A video whose Invidious response is an empty 200 shows “Could not load the video” | NOT A BUG (server response) |
+| BUG-024 | High | Confirmed | Performance/quality | 2160p/1440p/1080p options are AV1, software-decoded on this tablet, causing lag; menu hid codec and had no Auto | FIXED (codec labels, hardware-first sort, Auto) |
+| FEATURE-001 | — | Implemented | Playback | No hold-to-2× gesture | DONE (badge + restore) |
 
 ---
 
@@ -348,6 +350,34 @@ design threshold choice, not a crash; documented for the owner.
 `GET /api/v1/videos/jNQXAC9IVRw` returns **HTTP 200 with Content-Length 0** on this instance.
 The app shows “Could not load the video”. This is a server response, not a client parsing bug.
 
+## BUG-024 — High-quality playback lag is AV1 software decoding
+
+- **Severity:** High (performance/UX)
+- **Class:** Confirmed (device + Invidious API)
+- **Device:** Lenovo TB-8505F, Android 10 (MediaTek, no AV1 hardware)
+
+The quality sheet exposed tracks by resolution/bitrate only. Invidious returns multiple
+codecs per resolution; on Big Buck Bunny and Costa Rica the 2160p/1440p/1080p entries in the
+sheet were **AV1** (e.g. 2160p 26.2 Mbit/s, 1080p 6.92 Mbit/s). This tablet decodes AV1 in
+software, producing high CPU and lag. The default ExoPlayer auto track was 720p **H.264**
+(hardware) and played smoothly. The 1080p H.264 track (5.89–6.93 Mbit/s) also played with a
+~11% CPU sample.
+
+**Repair:** label every track with its codec (`AV1 (software)`, `H.264`, `VP9`, `HEVC`); sort
+hardware-friendly codecs first and AV1 last; add an **Auto (Recommended)** option that clears
+manual selection and lets ExoPlayer pick a supported track; show a warning that AV1/4K may
+lag. Five quality-related unit tests cover codec detection.
+
+**Limitation:** 4K AV1 cannot be made smooth on this hardware; the app now guides the user to
+Auto or 1080p H.264 while keeping every original quality available.
+
+## FEATURE-001 — Hold the video for temporary 2× playback
+
+Implemented a long-press on the video surface: speed becomes 2.0× while held, a `2x` badge is
+shown, and releasing restores the previous speed. The temporary speed is not persisted as the
+remembered playback speed. Verified on-device with logs `Hold speed start: 1.0 -> 2.0` and
+`Hold speed stop -> 1.0` (badge visible in the capture).
+
 ## Investigated and found acceptable
 
 - Search sort/date/duration parameters, including `rating`/`date`, are accepted by the
@@ -360,3 +390,5 @@ The app shows “Could not load the video”. This is a server response, not a c
 - `utf16` request headers on GET requests are odd but ignored by the server; left unchanged.
 - Feed, subscriptions, playlists and history endpoints match the models when authenticated.
 - Cleartext is required for the owner's current HTTP server; documented rather than removed.
+- Logged-in Subscriptions, Playlists and History screens loaded read-only with the owner's
+  session; no mutations were performed.

@@ -38,13 +38,14 @@ The one baseline error was a test-helper bug and was fixed.
 Command:
 
 ```bash
-bash -c 'source .tooling/env.sh && flutter test test/utils/url_utils_test.dart test/service/handle_response_test.dart'
+bash -c 'source .tooling/env.sh && flutter test test/utils/codec_utils_test.dart test/utils/url_utils_test.dart test/service/handle_response_test.dart test/comments/comment_json_test.dart'
 ```
 
-Result: **21/21 passed** (`+21: All tests passed!`).
+Result: **26/26 passed** (`+26: All tests passed!`).
 
 | File | Cases | Result |
 |---|---|---|
+| `test/utils/codec_utils_test.dart` | 5 | PASS |
 | `test/utils/url_utils_test.dart` | 11 | PASS |
 | `test/service/handle_response_test.dart` | 5 | PASS |
 | `test/comments/comment_json_test.dart` | 5 | PASS |
@@ -136,8 +137,8 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 | Final artifact | Value |
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
-| Size | 242,512,835 bytes (231.3 MiB) |
-| SHA-256 | `4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81` |
+| Size | 242,578,371 bytes (231.4 MiB) |
+| SHA-256 | `04e91ecc8974c304c02bdbc474bff274c72a5dd8362469c1eb0c217c17219580` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |
@@ -202,7 +203,13 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
 | Deep link `youtu.be/<id>` | FIXED (manifest), not implicitly proven | Filter now correct; the installed official YouTube app remains the default handler, so implicit resolution still selects YouTube |
 | Live stream | **BLOCKED (server)** | Invidious DASH manifest has `mediaPresentationDuration="PTNaNS"`; ExoPlayer rejects it; HLS endpoints return 403. App now tries DASH, shows a clear error, and stops the previous video |
 | Network-loss search | PARTIAL | Search overlay/keyboard interaction did not submit reliably; no explicit offline error captured |
-| Auth / subscriptions / history | SKIPPED | Personal data; not opened |
+| Logged-in Subscriptions feed | PASS (read-only) | Feed loaded with videos and the notification badge, using the owner's cookie session |
+| Logged-in Playlists | PASS (read-only) | User playlist list loaded |
+| Logged-in History | PASS (read-only) | History list loaded |
+| Hold-to-2× | PASS | Long-press logs `1.0 -> 2.0`, a `2x` badge appears, release logs `1.0`; verified on Auto/720p and 1080p H.264 |
+| Codec-aware quality menu | PASS | Tracks labelled AV1 (software) / H.264; hardware H.264 sorted first; Auto option checked |
+| 1080p H.264 playback | PASS | Hardware AVC track; CPU sample ~11% (Auto/720p lower still) |
+| 2160p AV1 playback | PASS with caveat | AV1 is software-decoded on this tablet; the menu labels it and warns; high CPU/lag is inherent |
 | Notifications (Android 13+ permission) | N/A | Device is Android 10; media notification itself verified |
 | Tablet-specific layout | PARTIAL | At 533 dp the app uses its phone layout; landscape uses 2 columns. The 600 dp `DeviceType.tablet` threshold is not met |
 
@@ -212,7 +219,7 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
 |---|---|---|
 | Physical phone tests | NOT RUN | Phone not connected (`adb devices` showed only the tablet) |
 | Token login round-trip | NOT RUN | Requires interactive browser approval |
-| Auth / subscriptions / history | SKIPPED | Would read personal account data |
+| Auth / subscriptions / history mutations | NOT RUN | Read-only screens verified; no subscribe/add/delete mutations performed |
 | Live playback | BLOCKED | Invalid Invidious DASH manifest (`PTNaNS`); HLS disabled/403 |
 | Network-loss search error | PARTIAL | Overlay submission not captured |
 | Release APK | NOT RUN | No signing key; profile APK is the owner-test artifact |
@@ -223,6 +230,10 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
 
 - The phone is untested; the tablet is a single Android 10 / arm64 device.
 - Live streams are blocked by the server's invalid DASH manifest; the app fails gracefully.
+- AV1 tracks (including 2160p) are software-decoded on this tablet and may lag; the menu labels
+  them, sorts hardware H.264/VP9 first and offers Auto. 4K AV1 cannot be made smooth here.
+- Hold-to-2× is temporary; it restores the previous speed and does not overwrite the remembered
+  playback-speed setting.
 - Cold start is slow (~18–28 s) on this tablet.
 - The media-session position can stop updating while backgrounded/rotated even though audio
   continues; the internal position and AudioFlinger show progress.

@@ -1,6 +1,6 @@
 # CONFIDENCE — evidence-based readiness assessment
 
-Date: 2026-10-24
+Date: 2026-10-25
 This is a qualitative assessment, not a statistical probability. "HIGH" means verified by
 execution or direct live evidence; "MEDIUM" means source evidence plus partial execution;
 "LOW"/"UNKNOWN" means unverified or device-dependent.
@@ -13,16 +13,17 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Instance connectivity (host) | HIGH | `0.0.0.0:5566`; LAN `192.168.1.4:5566` and Tailscale `100.109.64.77:5566` returned HTTP 200 | Device-side LAN routing, AP isolation, VPN behaviour |
 | Instance connectivity (device) | HIGH (tablet) / UNKNOWN (phone) | Tablet (192.168.1.3) reached `192.168.1.4:5566`; server added and home/search loaded | Phone not connected; AP isolation elsewhere untested |
 | Search and browsing | HIGH (tablet) | Videos/Channels/Playlists tabs, channel page, playlist page and video detail all loaded real data | Pagination and malformed-response edge cases |
-| Video playback | HIGH for VOD / BLOCKED for live | VOD works with DASH on, DASH off, and Proxy+DASH (`?local=true`); quality switching 2160p–144p; no codec errors. Live DASH manifest is invalid (`PTNaNS`) and HLS is 403 | Live is a server-side blocker; codec coverage on other devices |
+| Video playback | HIGH for VOD (hardware H.264) / BLOCKED for live | VOD works with DASH on/off and Proxy+DASH; codec-aware quality with Auto; 1080p H.264 ~11% CPU; hold-to-2× verified; AV1 is labelled software. Live DASH is invalid (`PTNaNS`) and HLS is 403 | 4K AV1 is inherently laggy on this tablet; live is server-side; other devices untested |
+| Playback performance | MEDIUM | Auto picks a hardware AVC track; 1080p H.264 and 2× hold played on-device; AV1/4K shown as software and sorted last | No frame-timing trace (Flutter bypasses HWUI `gfxinfo`); cold start still 18–28 s |
 | Audio-only playback | HIGH | Position advanced, AudioFlinger active, controls worked on-device | Other codecs/devices |
 | Downloads | HIGH | 144p download completed (ffmpeg-kit loaded), item appears in Downloads, and offline playback worked with Wi-Fi disabled | Larger downloads, storage pressure |
-| Authentication | HIGH (host) / SKIPPED (device) | Cookie login reproduced host-side; auth endpoints 200 with session | Device login intentionally skipped to avoid personal data; token flow interactive |
+| Authentication | HIGH (host + device read-only) | Cookie session works host-side; device Subscriptions/Playlists/History loaded with the owner's login | Account mutations intentionally not exercised; token flow interactive |
 | Persistence | HIGH | Cold start restored the server and settings; downloaded video persisted | Process-death edge cases |
 | Android lifecycle/background | MEDIUM | Background playback continued, MediaStyle notification with actions verified | Media-session position reporting went stale after background/rotation; phone lifecycle untested |
 | Phone compatibility | UNKNOWN | Phone not connected | Everything |
 | Tablet compatibility | MEDIUM | Lenovo TB-8505F, Android 10: portrait, landscape, dialogs and playback tested | One device; 533 dp uses phone layout; tablet-specific sidebar not active |
 | Security | MEDIUM | No credentials logged after fix; TLS verification not weakened; cleartext and plaintext credential storage documented | Broader hardening (encrypted storage, cleartext scoping) deferred |
-| Regression coverage | HIGH | 21 unit tests; analysis error-free; broad physical-device pass on the tablet | Integration tests not runnable; phone untested |
+| Regression coverage | HIGH | 26 unit tests; analysis error-free; broad physical-device pass including hold-to-2×, codec-aware quality and logged-in read-only screens | Integration tests not runnable; phone untested; no account mutations |
 | Installation reproducibility | HIGH (tablet) / UNKNOWN (phone) | Signed APK installed and launched on the tablet; package/version/ABI/signature verified; manual and adb instructions documented | Phone not installed; debug signing key differs from store builds; arm64 only |
 
 ## What would raise confidence

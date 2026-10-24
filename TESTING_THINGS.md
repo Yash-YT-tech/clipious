@@ -79,6 +79,9 @@ disabled in Clipious settings.
 | D-13 | Interrupt network for ~10 s, restore | Player recovers or shows a clear error, not a permanent hang | | NOT TESTED |
 | D-14 | Play a long video and seek near the end | Seeking works; progress is saved | | NOT TESTED |
 | D-15 | Return to a partially watched video | Playback resumes near the saved position | | NOT TESTED |
+| D-16 | Wait for controls to hide, then long-press the video and release | Plays at 2× while held with a `2x` badge; returns to the previous speed on release | | NOT TESTED |
+| D-17 | Open Quality | Tracks show codec labels; H.264/VP9 first, AV1 (software) last; Auto is checked | | NOT TESTED |
+| D-18 | Select 1080p H.264 if offered | Plays smoothly; 2160p AV1 may lag on this tablet | | NOT TESTED |
 
 ## E. User data and account behaviour
 

@@ -136,6 +136,32 @@ Commit hashes are filled in after the incremental commits.
   blocked server-side.
 - **Commit:** `705bc7c`.
 
+## FIX-014 — Codec-aware quality menu and Auto (BUG-024)
+
+- **Files:** `lib/utils/codec_utils.dart`, `lib/player/states/video_player.dart`,
+  `lib/player/views/components/player_controls.dart`, `test/utils/codec_utils_test.dart`
+- **Change:** label tracks with codec (AV1 as software), sort H.264/VP9/HEVC before AV1, add
+  Auto (Recommended) that clears manual selection, and show an AV1/4K warning. Track labels
+  and selection indices use the same sorted list.
+- **Tests:** 5 codec-label unit tests; on-device labels, ordering, Auto selection and
+  1080p H.264 hardware playback verified.
+- **Limitation:** 4K AV1 remains software-decoded on this tablet; manual selection still
+  available but may lag.
+- **Commit:** `3514960`.
+
+## FIX-015 — Hold-to-2× playback (FEATURE-001)
+
+- **Files:** `lib/player/states/interfaces/media_player.dart`,
+  `lib/player/states/video_player.dart`, `lib/player/states/audio_player.dart`,
+  `lib/player/states/player_controls.dart`,
+  `lib/player/views/components/player_controls.dart`
+- **Change:** long-press the video to set 2.0×; show a `2x` badge; restore the previous speed
+  on release. Temporary speed is not persisted as the remembered speed (guarded at the
+  speed-event handlers).
+- **Tests:** on-device logs `1.0 -> 2.0` / `1.0` with the badge visible; verified on Auto/720p
+  and 1080p H.264.
+- **Commit:** `3514960`.
+
 ## Commit map
 
 | Fix | Commit |
@@ -157,6 +183,8 @@ Commit hashes are filled in after the incremental commits.
 | FIX-011 comment schema | `499b6ca` |
 | FIX-012 youtu.be links | `3a581a7` |
 | FIX-013 live DASH/stale playback | `705bc7c` |
+| FIX-014 codec-aware quality/Auto | `3514960` |
+| FIX-015 hold-to-2× | `3514960` |
 | scrcpy/Artemis research + test plan | `196b160` |
 | Device-test results documentation | `a2570d2` |
 

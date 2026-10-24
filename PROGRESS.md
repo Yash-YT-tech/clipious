@@ -1,12 +1,13 @@
 # PROGRESS
 
-Last updated: 2026-10-24 (session 2)
+Last updated: 2026-10-25 (session 3)
 
 ## Current phase
 
-Phases 0–11 complete. Physical-device verification was performed on the connected tablet
-(Lenovo TB-8505F, Android 10) and new defects were fixed (comments, `youtu.be` links, live
-fallback). The phone was not connected, so phone verification remains pending.
+Phases 0–11 complete. Tablet verification, logged-in read-only checks and the performance/UX
+pass are complete. New work in this session: hold-to-2×, codec-aware quality with Auto,
+hardware-first sorting, plus comments/`youtu.be`/live fixes from the previous device run.
+The phone remains untested.
 
 ## Environment baseline (recorded before changes)
 
@@ -76,11 +77,12 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 | Check | Result |
 |---|---|
 | `flutter analyze` | 364 issues, **0 errors** (all pre-existing info/warnings) |
-| New tests (`url_utils`, `handle_response`, `comments`) | 21/21 pass |
+| New tests (`url_utils`, `handle_response`, `comments`, `codec`) | 26/26 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,512,835 bytes, sha256 `4fc439e3…47b81`, arm64-v8a, debug-signed, `apksigner verify` OK |
-| Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation; live streams BLOCKED by server manifest. See `TEST.md` §6 |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `04e91ecc…19580`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation, logged-in Subscriptions/Playlists/History (read-only), hold-to-2×, codec-aware quality/Auto; live streams BLOCKED by server manifest. See `TEST.md` §6 |
+| Performance | 1080p H.264 hardware track ~11% CPU; AV1 tracks remain software-decoded and may lag (labelled, sorted last, Auto recommended) |
 | Phone device tests | NOT RUN (phone not connected) |
 
 ## Device verification summary
@@ -96,6 +98,12 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
   fails gracefully and stops the previous video.
 - `youtu.be` links were fixed in the manifest; the official YouTube app remains the default
   handler on this device.
+- Logged-in Subscriptions, Playlists and History screens loaded read-only with the owner's
+  session; no account mutations were performed.
+- Hold-to-2× works: long-press logs `1.0 -> 2.0`, the `2x` badge appears, release restores
+  `1.0`; verified on Auto/720p and 1080p H.264.
+- Quality menu now labels codecs and puts hardware H.264/VP9 first; Auto is selected. 1080p
+  H.264 played with ~11% CPU; AV1/4K is software-decoded on this tablet and may lag.
 - Cold start is slow (~18–28 s) on this tablet.
 
 ## Build environment (resolved)
@@ -113,7 +121,8 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 2. **Live streams blocked server-side.** Invidious emits `mediaPresentationDuration="PTNaNS"`
    in the live DASH manifest and HLS returns 403. Client-side fallback/error handling is in
    place; server-side manifest correction or HLS enablement is required for live playback.
-3. **Auth/subscriptions/history were skipped on-device** to avoid reading personal data.
+3. **Account mutations were not exercised.** Subscriptions/Playlists/History were verified
+   read-only; no subscribe/add/delete operations were performed.
 4. **Network-loss search test was partial** (overlay submission not captured).
 5. **Integration test suite not runnable here.** It requires a separate Invidious at
    `localhost:3000` with user `test`/`test` and deletes subscriptions/history in teardown;
@@ -142,6 +151,8 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `499b6ca` fix(comments): accept Invidious's single authorThumbnail field
 - `3a581a7` fix(android): handle youtu.be short links
 - `a2570d2` docs: record tablet device-test results and new findings
+- `3514960` feat(player): hardware-first quality menu and hold-to-2x playback
+- Final performance/UX documentation commit on this branch.
 
 ## Next actions (owner)
 

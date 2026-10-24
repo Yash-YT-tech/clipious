@@ -22,8 +22,8 @@ libraries are packaged unstripped. A production release requires your own signin
 |---|---|
 | Build command | `bash -c 'source .tooling/env.sh && flutter build apk --profile --split-per-abi --target-platform android-arm64 --no-pub --no-tree-shake-icons'` |
 | APK path | `dist/clipious-1.22.15-arm64-profile.apk` |
-| Size | 242,512,835 bytes (231.3 MiB) |
-| SHA-256 | `4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81` |
+| Size | 242,578,371 bytes (231.4 MiB) |
+| SHA-256 | `04e91ecc8974c304c02bdbc474bff274c72a5dd8362469c1eb0c217c17219580` |
 | Package ID | `com.github.lamarios.clipious` |
 | Version | `1.22.15`, versionCode `60773` |
 | Build mode | **profile** (AOT, debug-signed, installable) |
@@ -38,7 +38,7 @@ Verify locally:
 ls -lh dist/clipious-1.22.15-arm64-profile.apk
 sha256sum dist/clipious-1.22.15-arm64-profile.apk
 # Expected:
-# 4fc439e38f0ce9ae34bf6a2e5804734be5e0a1ee0cba8822236844fbc6647b81
+# 04e91ecc8974c304c02bdbc474bff274c72a5dd8362469c1eb0c217c17219580
 ```
 
 The APK was verified with the Android SDK tools: `aapt2 dump badging` reports
@@ -47,9 +47,11 @@ The APK was verified with the Android SDK tools: `aapt2 dump badging` reports
 Android debug certificate.
 
 This APK was installed and exercised on a **Lenovo TB-8505F (Android 10, arm64)**. Server
-setup, search, channels/playlists, VOD playback (DASH/progressive/proxy), quality switching,
-audio-only, background playback, 144p download, offline playback and comments passed. Live
-streams remain blocked by the instance's invalid live DASH manifest; the phone is untested.
+setup, search, channels/playlists, VOD playback (DASH/progressive/proxy), codec-aware quality
+with Auto, hold-to-2×, logged-in Subscriptions/Playlists/History (read-only), audio-only,
+background playback, 144p download, offline playback and comments passed. Live streams remain
+blocked by the instance's invalid live DASH manifest; the phone is untested. On this tablet
+AV1/4K tracks are software-decoded and may lag; choose Auto or a hardware H.264/VP9 track.
 
 A debug APK was also built successfully but is ~696 MB (debug engine + Vulkan validation
 layer) and was removed to conserve disk space. Rebuild it only when verbose debug logs are

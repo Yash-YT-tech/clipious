@@ -284,6 +284,15 @@ task or cloud inference was run.
 - `youtu.be` links were resolved by the official YouTube app because the manifest required
   `/watch` and used `autoVerify`; fixed, though YouTube remains the default handler.
 - Live DASH is invalid (`mediaPresentationDuration="PTNaNS"`); HLS endpoints return 403.
+- Invidious exposes multiple codecs per resolution. On this tablet the 2160p/1440p/1080p
+  entries in the quality sheet were **AV1** (e.g. 2160p 26.2 Mbit/s, 1080p 6.92 Mbit/s), which
+  is software-decoded and caused the reported high-quality lag. Hardware **H.264** 1080p
+  (5.89–6.93 Mbit/s) played with a ~11% CPU sample; Auto selects a hardware AVC track. The
+  app now labels AV1 as software, sorts hardware codecs first and offers Auto.
+- Long-press playback (temporary 2×) was implemented and verified on-device (`1.0 -> 2.0 ->
+  1.0`); the badge appears while held.
+- Logged-in Subscriptions/Playlists/History screens loaded read-only with the owner's cookie
+  session; no account mutations were performed.
 - Cold start is ~18–28 s; media-session progress can go stale after background/rotation while
   audio continues (AudioFlinger active).
 
