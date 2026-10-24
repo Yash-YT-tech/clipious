@@ -26,6 +26,7 @@ import '../../main.dart';
 import '../../media_handler.dart';
 import '../../settings/states/settings.dart';
 import '../../utils/models/pair.dart';
+import '../../utils/url_utils.dart';
 import '../../videos/models/db/progress.dart' as db_progress;
 import '../../videos/models/sponsor_segment.dart';
 import '../../videos/models/sponsor_segment_types.dart';
@@ -842,14 +843,15 @@ class PlayerCubit extends Cubit<PlayerState> with WidgetsBindingObserver {
   Future<MediaItem?> getMediaItem(int index) async {
     if (state.videos.isNotEmpty) {
       var e = state.videos[index];
+      final server = await db.getCurrentlySelectedServer();
+      final artUrl = ImageObject.getBestThumbnail(e.videoThumbnails)?.url;
       return MediaItem(
           id: e.videoId,
           title: e.title ?? '',
           artist: e.author,
           duration: Duration(seconds: e.lengthSeconds ?? 1),
           album: '',
-          artUri: Uri.parse(
-              ImageObject.getBestThumbnail(e.videoThumbnails)?.url ?? ''));
+          artUri: Uri.parse(resolveInstanceUrl(server.url, artUrl)));
     } else if (state.offlineVideos.isNotEmpty) {
       var e = state.offlineVideos[index];
       var path = await e.thumbnailPath;

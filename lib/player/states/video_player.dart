@@ -14,6 +14,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../globals.dart';
 import '../../main.dart';
 import '../../utils/pretty_bytes.dart';
+import '../../utils/url_utils.dart';
 import '../../videos/models/video.dart';
 import '../views/components/player_controls.dart';
 import '../views/tv/components/player_controls.dart';
@@ -260,47 +261,64 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
         assert(newState.video!.adaptiveFormats != null);
 
         var server = await db.getCurrentlySelectedServer();
-        String baseUrl = (server).url;
+        String baseUrl = normalizeInstanceUrl(server.url);
 
         Map<String, String> resolutions = {};
 
-        bool isHls = newState.video!.hlsUrl != null;
+        final hlsUrl = newState.video!.hlsUrl;
+        final isHls = hlsUrl != null && hlsUrl.isNotEmpty;
 
-        var formatStream = isHls
-            ? null
-            : newState.video!
-                .formatStreams![newState.video!.formatStreams!.length - 1];
+        final formatStreams = newState.video!.formatStreams ?? [];
+        final dashUrl = newState.video!.dashUrl;
+        final useDash = isUsingDash() && dashUrl != null && dashUrl.isNotEmpty;
+
+        final formatStream = (!isHls && !useDash && formatStreams.isNotEmpty)
+            ? formatStreams.last
+            : null;
 
         var useProxy = service.useProxy();
 
-        String videoUrl = isHls
-            ? '${newState.video!.hlsUrl!}${useProxy ? '?local=true' : ''}'
-            : isUsingDash()
-                ? '${newState.video!.dashUrl}${useProxy ? '?local=true' : ''}'
-                : formatStream?.url ?? '';
-        if (!isUsingDash() && formatStream != null) {
+        String? rawVideoUrl;
+        if (isHls) {
+          rawVideoUrl = hlsUrl;
+        } else if (useDash) {
+          rawVideoUrl = dashUrl;
+        } else {
+          rawVideoUrl = formatStream?.url;
+        }
+
+        if (rawVideoUrl == null || rawVideoUrl.isEmpty) {
+          log.severe(
+              'No playable stream found for video ${newState.video!.videoId}');
+          player.setEvent(const MediaEvent(state: MediaState.error));
+          return;
+        }
+
+        String videoUrl = resolveInstanceUrl(baseUrl, rawVideoUrl);
+
+        if (!isHls && !useDash && formatStream != null) {
           newState =
               newState.copyWith(selectedNonDashTrack: formatStream.resolution);
         }
 
-        // somehow invidious is sending google url even when using local proxy when not using dash
-        if (!isUsingDash() && useProxy) {
-          // we replace google's cdn by invidious server url.
-          videoUrl = videoUrl.replaceFirst(_googleCdnRegex, '${(server).url}/');
+        // Older invidious versions can return google URLs even when the local
+        // proxy is enabled, replace those with the instance URL as well.
+        if (!isHls && !useDash && useProxy) {
+          videoUrl = videoUrl.replaceFirst(_googleCdnRegex, '$baseUrl/');
         }
 
-        log.info(
-            'Playing url (dash ${isUsingDash()},  hasHls ? ${newState.video!.hlsUrl != null})  $videoUrl');
+        log.info('Playing url (dash $useDash,  hasHls ? $isHls)  $videoUrl');
 
         BetterPlayerVideoFormat format = isHls
             ? BetterPlayerVideoFormat.hls
-            : isUsingDash()
+            : useDash
                 ? BetterPlayerVideoFormat.dash
                 : BetterPlayerVideoFormat.other;
 
         if (format == BetterPlayerVideoFormat.other) {
-          for (var value in (newState.video!.formatStreams ?? [])) {
-            resolutions[value.qualityLabel] = value.url;
+          for (var value in formatStreams) {
+            resolutions[value.qualityLabel] =
+                resolveInstanceUrl(baseUrl, value.url);
           }
         }
 
@@ -318,7 +336,7 @@ class VideoPlayerCubit extends MediaPlayerCubit<VideoPlayerState> {
           subtitles: newState.video!.captions
               .map((s) => BetterPlayerSubtitlesSource(
                   type: BetterPlayerSubtitlesSourceType.network,
-                  urls: ['$baseUrl${s.url}'],
+                  urls: [resolveInstanceUrl(baseUrl, s.url)],
                   name: s.label,
                   selectedByDefault: s.label == lastSubtitle))
               .toList(),

@@ -5,8 +5,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipious/app/views/tv/screens/tv_home.dart';
 import 'package:clipious/channels/states/channel.dart';
 import 'package:clipious/globals.dart';
+import 'package:clipious/settings/models/db/server.dart';
 import 'package:clipious/subscription_management/view/tv/tv_subscribe_button.dart';
 import 'package:clipious/utils/models/image_object.dart';
+import 'package:clipious/utils/url_utils.dart';
 import 'package:clipious/utils/models/paginated_list.dart';
 import 'package:clipious/utils/views/components/placeholders.dart';
 import 'package:clipious/utils/views/components/thumbnail.dart';
@@ -67,11 +69,20 @@ class TvChannelScreen extends StatelessWidget {
                             top: 0,
                             left: 0,
                             right: 0,
-                            child: CachedNetworkImage(
-                                imageUrl: ImageObject.getBestThumbnail(
-                                            channel.channel?.authorBanners)
-                                        ?.url ??
-                                    '')),
+                            child: FutureBuilder<Server?>(
+                                future: db.getCurrentlySelectedServer(),
+                                builder: (context, snapshot) {
+                                  final rawUrl = ImageObject.getBestThumbnail(
+                                          channel.channel?.authorBanners)
+                                      ?.url;
+                                  final imageUrl = rawUrl != null &&
+                                          snapshot.hasData &&
+                                          snapshot.data != null
+                                      ? resolveInstanceUrl(
+                                          snapshot.data!.url, rawUrl)
+                                      : '';
+                                  return CachedNetworkImage(imageUrl: imageUrl);
+                                })),
                         TweenAnimationBuilder(
                             tween: Tween<double>(
                                 begin: 0,

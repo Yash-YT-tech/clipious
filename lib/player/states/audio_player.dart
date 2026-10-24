@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:logging/logging.dart';
 
 import '../../settings/states/settings.dart';
+import '../../utils/url_utils.dart';
 import '../../videos/models/adaptive_format.dart';
 import '../models/media_event.dart';
 
@@ -119,10 +120,14 @@ class AudioPlayerCubit extends MediaPlayerCubit<AudioPlayerState> {
           assert(state.video!.formatStreams != null);
           if (service.useProxy()) {
             // audio only streams don't seem to work when using proxy mode, using formatted streams when proxy is enabled
-            var formatStream = state
-                .video!.formatStreams![state.video!.formatStreams!.length - 1];
-            source = AudioSource.uri(Uri.parse(formatStream.url),
-                headers: server.headersForUrl(formatStream.url));
+            final formatStreams = state.video!.formatStreams ?? [];
+            if (formatStreams.isEmpty) {
+              throw StateError('No audio stream available for this video');
+            }
+            final formatStream = formatStreams.last;
+            final url = resolveInstanceUrl(server.url, formatStream.url);
+            source = AudioSource.uri(Uri.parse(url),
+                headers: server.headersForUrl(url));
           } else {
             AdaptiveFormat? audio = state.video?.adaptiveFormats!
                 .where((element) => element.type.contains("audio"))
@@ -139,8 +144,9 @@ class AudioPlayerCubit extends MediaPlayerCubit<AudioPlayerState> {
               }
               emit(state);
 
-              source = AudioSource.uri(Uri.parse(audio.url),
-                  headers: server.headersForUrl(audio.url));
+              final url = resolveInstanceUrl(server.url, audio.url);
+              source = AudioSource.uri(Uri.parse(url),
+                  headers: server.headersForUrl(url));
             }
           }
         } else {
