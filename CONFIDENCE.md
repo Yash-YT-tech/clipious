@@ -18,6 +18,7 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Motion smoothness | MEDIUM | Tokenized 100–350 ms motion, player/tab/queue fades, thumbnail/grid rebuild fixes and reduced-motion smoke verified; static UI screenshots match | No formal DevTools p95 trace yet; player-overlay progress split, skeleton tickers and eager comments remain |
 | Startup | MEDIUM | Steady cold start 4.3–5.1 s → 3.4–3.5 s; warm start 0.83 s; first run after install ~8 s | DB/engine floor; bootstrap UI or faster DB open would be needed for lower cold times |
 | Keyboard/focus | HIGH | One-shot search focus; route push/pop clears focus and calls `TextInput.hide`; video/quality/back leave keyboard/toolbar hidden | Other text-field dialogs were not exhaustively deep-linked |
+| Responsive layout | MEDIUM | Width/height policy separates layout from feature gating; 533 portrait/landscape, 600+, foldable and wide-short cases covered by 10 tests; profile build verified | Tablet disconnected, so no physical rotation/layout pass in this change |
 | Audio-only playback | HIGH | Position advanced, AudioFlinger active, controls worked on-device | Other codecs/devices |
 | Downloads | HIGH | 144p download completed (ffmpeg-kit loaded), item appears in Downloads, and offline playback worked with Wi-Fi disabled | Larger downloads, storage pressure |
 | Authentication | HIGH (host + device read-only) | Cookie session works host-side; device Subscriptions/Playlists/History loaded with the owner's login | Account mutations intentionally not exercised; token flow interactive |
@@ -26,7 +27,7 @@ execution or direct live evidence; "MEDIUM" means source evidence plus partial e
 | Phone compatibility | UNKNOWN | Phone not connected | Everything |
 | Tablet compatibility | MEDIUM | Lenovo TB-8505F, Android 10: portrait, landscape, dialogs and playback tested | One device; 533 dp uses phone layout; tablet-specific sidebar not active |
 | Security | MEDIUM | No credentials logged after fix; TLS verification not weakened; cleartext and plaintext credential storage documented | Broader hardening (encrypted storage, cleartext scoping) deferred |
-| Regression coverage | HIGH | 29 unit tests; analysis error-free; broad physical-device pass including hold-to-2×, codec-aware quality and logged-in read-only screens | Integration tests not runnable; phone untested; no account mutations |
+| Regression coverage | HIGH | 39 unit tests; analysis error-free; broad physical-device pass including hold-to-2×, codec-aware quality and logged-in read-only screens | Integration tests not runnable; phone untested; no account mutations |
 | Installation reproducibility | HIGH (tablet) / UNKNOWN (phone) | Signed APK installed and launched on the tablet; package/version/ABI/signature verified; manual and adb instructions documented | Phone not installed; debug signing key differs from store builds; arm64 only |
 
 ## What would raise confidence

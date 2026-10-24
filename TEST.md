@@ -27,7 +27,7 @@ bash -c 'source .tooling/env.sh && flutter analyze --no-fatal-infos --no-fatal-w
 | Run | Result |
 |---|---|
 | Baseline before edits | 367 issues, **1 error** (`test/test_player_cubit.dart:7`, body might complete normally) |
-| After edits | 365 issues, **0 errors** |
+| After edits | 366 issues, **0 errors** |
 
 Remaining issues are pre-existing infos/warnings (missing type annotations, deprecated
 Workmanager `isInDebugMode`, `invalid_annotation_target` on `json_annotation`, pubspec sort).
@@ -38,13 +38,15 @@ The one baseline error was a test-helper bug and was fixed.
 Command:
 
 ```bash
-bash -c 'source .tooling/env.sh && flutter test test/utils/motion_test.dart test/utils/codec_utils_test.dart test/utils/url_utils_test.dart test/service/handle_response_test.dart test/comments/comment_json_test.dart'
+bash -c 'source .tooling/env.sh && flutter test test/utils/responsive_test.dart test/utils/responsive_widget_test.dart test/utils/motion_test.dart test/utils/codec_utils_test.dart test/utils/url_utils_test.dart test/service/handle_response_test.dart test/comments/comment_json_test.dart'
 ```
 
-Result: **29/29 passed** (`+29: All tests passed!`).
+Result: **39/39 passed** (`+39: All tests passed!`).
 
 | File | Cases | Result |
 |---|---|---|
+| `test/utils/responsive_test.dart` | 6 | PASS |
+| `test/utils/responsive_widget_test.dart` | 4 | PASS |
 | `test/utils/motion_test.dart` | 3 | PASS |
 | `test/utils/codec_utils_test.dart` | 5 | PASS |
 | `test/utils/url_utils_test.dart` | 11 | PASS |
@@ -139,7 +141,7 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,578,371 bytes (231.4 MiB) |
-| SHA-256 | `612ab9a1dc39be6e1d34f2c6650954bc4721b0fdc5e89b446ae8b90c6e954027` |
+| SHA-256 | `15df93a2b4c48ac941426f90865076b297ff3334d4a411a98072f85f631863d1` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |
@@ -269,6 +271,25 @@ Keyboard verification:
   search field is tapped.
 - No Flutter exceptions during the navigation sequence.
 - Evidence: `128`–`137` in the run directory (search, video, quality, back-to-search).
+
+## 7.7 Responsive layout policy (2026-10-25)
+
+The tablet is disconnected, so this pass was verified with breakpoint + `DeviceWidget` tests and
+a profile build, not on physical hardware.
+
+Policy (`useWideLayoutForSize`):
+
+| Window | Shell |
+|---|---|
+| Compact portrait (<600 dp shortest side) | phone |
+| 533 dp tablet landscape (853×533) | wide |
+| 600 dp+ / foldable (e.g. 720×800) | wide |
+| Wide-but-short phone landscape (e.g. 800×360) | compact/phone |
+
+Applied to the home shell/rail, video detail tabs, search rail, channel rail, player mini
+sizing, playlist grid, banner placeholders and content max-width. `getDeviceType()` is still
+used for settings/feature gating, so no setting, codec, playback or account behavior changed.
+White-box tests: 6 breakpoint cases + 4 `DeviceWidget` widget cases; full suite 39/39.
 
 ## 8. Known limitations
 

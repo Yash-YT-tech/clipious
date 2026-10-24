@@ -223,6 +223,17 @@ Commit hashes are filled in after the incremental commits.
   after install still ~8 s due to Android dex/verification warm-up.
 - **Commit:** `72a7e31`.
 
+## FIX-022 — Window-ratio-aware layout policy (BUG-022)
+
+- **Files:** `lib/utils.dart`, `DeviceWidget`, home shell, video detail, search, channel, player,
+  playlist grid/inner view, subscription management, banner placeholders.
+- **Change:** added `useWideLayoutForSize` / `useWideLayout` independent of feature-gating
+  `getDeviceType()`. Compact portrait <600 dp stays phone; 533 dp landscape, 600 dp+ and
+  foldable widths use wide; wide-but-short phones stay compact.
+- **Verification:** 6 breakpoint tests + 4 `DeviceWidget` tests; 39/39 total; profile build.
+  Physical rotation/layout check pending because the tablet is disconnected.
+- **Commit:** `e486fea`.
+
 ## Commit map
 
 | Fix | Commit |
@@ -252,6 +263,7 @@ Commit hashes are filled in after the incremental commits.
 | FIX-019 lazy grid/build scope | `2209782` |
 | FIX-020 search focus/IME cleanup | `72a7e31` |
 | FIX-021 startup parallelization | `72a7e31` |
+| FIX-022 window-ratio layout | `e486fea` |
 | scrcpy/Artemis research + test plan | `196b160` |
 | Device-test results documentation | `a2570d2` |
 

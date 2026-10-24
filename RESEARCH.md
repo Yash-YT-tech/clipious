@@ -300,6 +300,11 @@ task or cloud inference was run.
 - Startup: `PackageInfo` and DB open in parallel, TV/server checks in parallel, file-DB sync
   moved after `runApp`, notifications/high-refresh deferred. Measured steady cold start
   **4.3–5.1 s → 3.4–3.5 s**, warm **0.83 s**; first post-install run ~8 s (Android dex).
+- Responsive layout: `getDeviceType()` (feature/setting gating) stayed on the physical
+  shortest-side rule, while a new `useWideLayout()` chooses the shell from the current window.
+  Compact portrait stays phone; 533dp landscape, 600dp+ and foldables use wide; wide-but-short
+  phones stay compact. Verified with 6 breakpoint + 4 `DeviceWidget` tests; the tablet was
+  disconnected, so physical rotation remains to be checked.
 - Historically cold start was ~18–28 s; after the parallel/deferred startup pass steady cold
   start is 3.4–3.5 s (warm 0.83 s; first post-install run ~8 s for Android dex). Media-session
   progress can go stale after background/rotation while audio continues (AudioFlinger active).

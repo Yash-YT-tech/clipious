@@ -40,7 +40,7 @@ Status values: **FIXED** (change implemented, automated test/build status in `TE
 | BUG-020 | Low | Confirmed | Playback telemetry | Media-session position stops updating in background/rotation while audio continues | OPEN (documented) |
 | BUG-021 | Low | Confirmed | Performance | Cold start was ~4.3–5.1 s measured (historically 18–28 s) | IMPROVED to ~3.4–3.5 s steady / 0.83 s warm |
 | BUG-025 | Medium | Confirmed | Keyboard/focus | Search autofocus persisted across route pushes; keyboard/floating IME toolbar appeared over video/quality | FIXED (one-shot focus + route unfocus/TextInput.hide) |
-| BUG-022 | Low | Potential | Tablet UI | 533 dp tablet is classified as phone; tablet-specific layouts are not used | OPEN (documented) |
+| BUG-022 | Low | Potential | Tablet UI | 533 dp tablet was classified as phone; tablet-specific layouts were not used | IMPROVED (separate wide-layout policy; compact portrait preserved) |
 | BUG-023 | Info | Confirmed | Deep links | A video whose Invidious response is an empty 200 shows “Could not load the video” | NOT A BUG (server response) |
 | BUG-024 | High | Confirmed | Performance/quality | 2160p/1440p/1080p options are AV1, software-decoded on this tablet, causing lag; menu hid codec and had no Auto | FIXED (codec labels, hardware-first sort, Auto) |
 | FEATURE-001 | — | Implemented | Playback | No hold-to-2× gesture | DONE (badge + restore) |
@@ -363,9 +363,13 @@ and floating toolbar hidden; returning to search does not reopen it until the fi
 ## BUG-022 — 533 dp tablet uses the phone layout
 
 `getDeviceType()` uses `shortestSide < 600`. The Lenovo panel is 800×1280 at 240 dpi =
-**533 dp**, so it is classified as a phone. Portrait uses one column; landscape uses two
-columns and full-screen playback. Tablet-specific views/sidebar are not activated. This is a
-design threshold choice, not a crash; documented for the owner.
+**533 dp**, so it was classified as a phone. A separate `useWideLayout()` policy now chooses
+the shell from the current window: 533 dp portrait stays compact; 533 dp landscape
+(853×533), 600 dp+ and foldable widths use the wide layout; wide-but-short phone windows stay
+compact. `getDeviceType()` is still used for settings/feature gating, so playback, codec and
+account behavior are unchanged. Verified with 10 breakpoint/widget tests and a profile build;
+the tablet was disconnected for this pass, so physical rotation/layout verification is
+pending.
 
 ## BUG-023 — Empty video response for a deep link
 

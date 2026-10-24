@@ -92,6 +92,16 @@ disabled in Clipious settings.
 | D2-03 | Open Quality, then go back | No keyboard/floating toolbar; returning to Search keeps it hidden until the field is tapped | | NOT TESTED |
 | D2-04 | Cold launch, then warm launch from background | No stray keyboard; steady-state cold ~3.4–3.5 s, warm ~0.8 s | | NOT TESTED |
 
+## D3. Screen ratios and rotation
+
+| ID | Steps | Expected | Actual | Status |
+|---|---|---|---|---|
+| D3-01 | Open Clipious on a compact portrait phone | Bottom navigation and one-column feed; no clipping | | NOT TESTED |
+| D3-02 | Rotate a 533 dp tablet to landscape | Wide shell: navigation rail, two-pane video/info layout where applicable; no overflow | | NOT TESTED |
+| D3-03 | Use a 600 dp+ tablet or foldable in portrait | Wide shell with rail; content max-width stays readable | | NOT TESTED |
+| D3-04 | Use a wide-but-short phone landscape | Compact/phone shell, not the tablet rail | | NOT TESTED |
+| D3-05 | Rotate while the player is open | Player reflows without losing playback or controls | | NOT TESTED |
+
 ## E. User data and account behaviour
 
 Authentication is optional. Cookie login was verified on the host side; if you use it, enter

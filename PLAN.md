@@ -81,6 +81,7 @@ Persistence: Sembast+sqflite (main isolate) / JSON files (WorkManager isolate)
 | T-29 | — | Formal DevTools UI/raster p95 trace | Medium | NOT RUN | Next measured pass |
 | T-30 | BUG-025 | One-shot search focus + route IME cleanup | Medium | DONE | `72a7e31` |
 | T-31 | BUG-021 | Parallelize/defer non-critical startup work | Medium | DONE | `72a7e31` |
+| T-32 | BUG-022 | Window-ratio-aware layout policy + tests | Medium | DONE (static/widget) | `e486fea` |
 
 Dependencies: T-03…T-11 depend on T-01/T-02; T-13 depends on T-03…T-12; T-14 depends on T-13;
 T-18 depends on T-14 and owner-connected hardware.
@@ -135,6 +136,7 @@ T-18 depends on T-14 and owner-connected hardware.
 | M8 Physical-device verification | PARTIAL: tablet PASS (except live), logged-in read-only PASS; phone and account mutations pending |
 | M9 Motion/performance pass | PARTIAL: UI parity, fades, thumbnail/grid fixes and reduced-motion verified; formal frame trace and remaining rebuild splits pending |
 | M10 Keyboard/startup polish | DONE: focus/IME cleanup verified; steady cold 3.4–3.5 s, warm 0.83 s |
+| M11 Responsive layout | DONE (static/widget): 533 portrait/landscape, 600+, foldable and wide-short covered; physical rotation pending |
 
 ## 9. Deferred work
 

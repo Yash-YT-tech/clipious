@@ -1,14 +1,16 @@
 # PROGRESS
 
-Last updated: 2026-10-25 (session 5)
+Last updated: 2026-10-25 (session 6)
 
 ## Current phase
 
-Phases 0–11 complete. Tablet verification, logged-in read-only checks, the motion/performance
-pass, and the keyboard/startup fixes are complete. New work: hold-to-2×, codec-aware quality
-with Auto, hardware-first sorting, motion tokens/fades, thumbnail/grid rebuild fixes,
-reduced-motion support, one-shot search focus/IME cleanup, and startup parallelization. The
-phone and formal DevTools frame trace remain pending.
+Phases 0–11 complete. Tablet verification, logged-in read-only checks, motion/performance,
+keyboard/startup and the window-ratio layout pass are complete. New work: hold-to-2×,
+codec-aware quality with Auto, hardware-first sorting, motion tokens/fades, thumbnail/grid
+rebuild fixes, reduced-motion support, search/IME cleanup, startup parallelization and a
+separate wide-layout policy (`useWideLayout`) that leaves feature gating unchanged. The tablet
+is disconnected; responsive verification is static/widget-based, and the phone plus formal
+DevTools frame trace remain pending.
 
 ## Environment baseline (recorded before changes)
 
@@ -77,11 +79,11 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 
 | Check | Result |
 |---|---|
-| `flutter analyze` | 365 issues, **0 errors** (all pre-existing info/warnings) |
-| New tests (`motion`, `url_utils`, `handle_response`, `comments`, `codec`) | 29/29 pass |
+| `flutter analyze` | 366 issues, **0 errors** (all pre-existing info/warnings) |
+| New tests (`responsive`, `motion`, `url_utils`, `handle_response`, `comments`, `codec`) | 39/39 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `612ab9a1…54027`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `15df93a2…863d1`, arm64-v8a, debug-signed, `apksigner verify` OK |
 | Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation, logged-in Subscriptions/Playlists/History (read-only), hold-to-2×, codec-aware quality/Auto; live streams BLOCKED by server manifest. See `TEST.md` §6 |
 | Performance | 1080p H.264 hardware track ~11% CPU; AV1 tracks remain software-decoded and may lag (labelled, sorted last, Auto recommended) |
 | Phone device tests | NOT RUN (phone not connected) |
@@ -120,6 +122,11 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
   file-DB sync moved after `runApp`, and notifications/high-refresh setup deferred. Steady
   cold start 4.3–5.1 s → 3.4–3.5 s; warm start 0.83 s. First run after install is ~8 s due to
   Android dex/verification warm-up.
+- Responsive: a separate `useWideLayout()` policy now drives shell/rail/grid/player layout from
+  the current window. 533 dp portrait stays compact; 533 dp landscape (853×533), 600 dp+ and
+  foldables use wide; wide-but-short phones stay compact. Feature-gating `getDeviceType()` is
+  unchanged. Verified by 6 breakpoint + 4 `DeviceWidget` tests and a profile build; physical
+  rotation is pending because the tablet is disconnected.
 
 ## Build environment (resolved)
 
@@ -172,6 +179,7 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `3514960` feat(player): hardware-first quality menu and hold-to-2x playback
 - `2209782` perf(ui): smooth motion and reduce render jank
 - `72a7e31` fix(ui): suppress stray keyboard and shorten startup
+- `e486fea` fix(ui): adapt layout to window ratio without changing features
 - Final performance/UX documentation commit on this branch.
 
 ## Next actions (owner)
