@@ -79,6 +79,8 @@ Persistence: Sembast+sqflite (main isolate) / JSON files (WorkManager isolate)
 | T-27 | PERF-001…003 | Thumbnail render path, lazy grid, build scope, progress writes | High | DONE | `2209782` |
 | T-28 | — | On-device UI parity, controls/2×/quality/tabs, reduced-motion smoke | Medium | DONE | `TEST.md` §7.5 |
 | T-29 | — | Formal DevTools UI/raster p95 trace | Medium | NOT RUN | Next measured pass |
+| T-30 | BUG-025 | One-shot search focus + route IME cleanup | Medium | DONE | `72a7e31` |
+| T-31 | BUG-021 | Parallelize/defer non-critical startup work | Medium | DONE | `72a7e31` |
 
 Dependencies: T-03…T-11 depend on T-01/T-02; T-13 depends on T-03…T-12; T-14 depends on T-13;
 T-18 depends on T-14 and owner-connected hardware.
@@ -132,6 +134,7 @@ T-18 depends on T-14 and owner-connected hardware.
 | M7 Documentation/handover | DONE |
 | M8 Physical-device verification | PARTIAL: tablet PASS (except live), logged-in read-only PASS; phone and account mutations pending |
 | M9 Motion/performance pass | PARTIAL: UI parity, fades, thumbnail/grid fixes and reduced-motion verified; formal frame trace and remaining rebuild splits pending |
+| M10 Keyboard/startup polish | DONE: focus/IME cleanup verified; steady cold 3.4–3.5 s, warm 0.83 s |
 
 ## 9. Deferred work
 
@@ -142,7 +145,8 @@ T-18 depends on T-14 and owner-connected hardware.
 - Upstream the relative-URL, comments and link fixes (requires owner authorisation).
 - Phone verification (the tablet pass is the reference).
 - Live playback: correct the Invidious DASH manifest (`PTNaNS`) or enable HLS server-side.
-- Performance: investigate the ~18–28 s cold start on the Lenovo tablet.
+- Startup: steady cold start is now ~3.4–3.5 s (warm ~0.83 s); a bootstrap loading UI or faster
+  DB open could reduce it further. First post-install run is ~8 s for Android dex.
 - Tablet layout: decide whether a 533 dp device should use tablet views (currently phone).
 - 4K AV1 playback: this tablet has no AV1 hardware decoder; the app now labels/sorts it and
   recommends Auto/H.264, but true 4K AV1 smoothness requires different hardware.

@@ -23,7 +23,7 @@ libraries are packaged unstripped. A production release requires your own signin
 | Build command | `bash -c 'source .tooling/env.sh && flutter build apk --profile --split-per-abi --target-platform android-arm64 --no-pub --no-tree-shake-icons'` |
 | APK path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,578,371 bytes (231.4 MiB) |
-| SHA-256 | `4a25183428ae6b5c7e0e4308571bbd49b5d4652953703a11ef31c369f5714fab` |
+| SHA-256 | `612ab9a1dc39be6e1d34f2c6650954bc4721b0fdc5e89b446ae8b90c6e954027` |
 | Package ID | `com.github.lamarios.clipious` |
 | Version | `1.22.15`, versionCode `60773` |
 | Build mode | **profile** (AOT, debug-signed, installable) |
@@ -38,7 +38,7 @@ Verify locally:
 ls -lh dist/clipious-1.22.15-arm64-profile.apk
 sha256sum dist/clipious-1.22.15-arm64-profile.apk
 # Expected:
-# 4a25183428ae6b5c7e0e4308571bbd49b5d4652953703a11ef31c369f5714fab
+# 612ab9a1dc39be6e1d34f2c6650954bc4721b0fdc5e89b446ae8b90c6e954027
 ```
 
 The APK was verified with the Android SDK tools: `aapt2 dump badging` reports
@@ -51,9 +51,10 @@ setup, search, channels/playlists, VOD playback (DASH/progressive/proxy), codec-
 with Auto, hold-to-2×, logged-in Subscriptions/Playlists/History (read-only), audio-only,
 background playback, 144p download, offline playback and comments passed. The motion pass
 (tiered durations/curves, player/tab/queue fades, reduced-motion support, thumbnail/grid
-rebuild fixes) is included and visually parity-checked. Live streams remain blocked by the
-instance's invalid live DASH manifest; the phone is untested. On this tablet AV1/4K tracks are
-software-decoded and may lag; choose Auto or a hardware H.264/VP9 track.
+rebuild fixes), one-shot search focus/IME cleanup and startup parallelization are included.
+Steady cold start is ~3.4–3.5 s (warm ~0.83 s) on this tablet. Live streams remain blocked by
+the instance's invalid live DASH manifest; the phone is untested. On this tablet AV1/4K tracks
+are software-decoded and may lag; choose Auto or a hardware H.264/VP9 track.
 
 A debug APK was also built successfully but is ~696 MB (debug engine + Vulkan validation
 layer) and was removed to conserve disk space. Rebuild it only when verbose debug logs are

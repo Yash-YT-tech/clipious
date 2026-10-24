@@ -38,7 +38,8 @@ Status values: **FIXED** (change implemented, automated test/build status in `TE
 | BUG-018 | Medium | Confirmed | Android links | `youtu.be` filter required `/watch`; `autoVerify` on non-owned domains excluded Clipious as a handler | FIXED |
 | BUG-019 | High | Confirmed/External | Live playback | Live DASH manifest has `mediaPresentationDuration="PTNaNS"`; HLS endpoints return 403 | BLOCKED (server); app fails gracefully |
 | BUG-020 | Low | Confirmed | Playback telemetry | Media-session position stops updating in background/rotation while audio continues | OPEN (documented) |
-| BUG-021 | Low | Confirmed | Performance | Cold start takes ~18–28 s on the Lenovo tablet | OPEN (documented) |
+| BUG-021 | Low | Confirmed | Performance | Cold start was ~4.3–5.1 s measured (historically 18–28 s) | IMPROVED to ~3.4–3.5 s steady / 0.83 s warm |
+| BUG-025 | Medium | Confirmed | Keyboard/focus | Search autofocus persisted across route pushes; keyboard/floating IME toolbar appeared over video/quality | FIXED (one-shot focus + route unfocus/TextInput.hide) |
 | BUG-022 | Low | Potential | Tablet UI | 533 dp tablet is classified as phone; tablet-specific layouts are not used | OPEN (documented) |
 | BUG-023 | Info | Confirmed | Deep links | A video whose Invidious response is an empty 200 shows “Could not load the video” | NOT A BUG (server response) |
 | BUG-024 | High | Confirmed | Performance/quality | 2160p/1440p/1080p options are AV1, software-decoded on this tablet, causing lag; menu hid codec and had no Auto | FIXED (codec labels, hardware-first sort, Auto) |
@@ -338,9 +339,26 @@ Not fixed; affects progress reporting/UI only on this Android 10 device.
 
 ## BUG-021 — Slow cold start
 
-First draw took **17.7 s** (`ActivityTaskManager: Fully drawn … +17s682ms`); later cold starts
-took ~20–28 s. The app loads a large profile engine, initializes the DB/notifications and
-fetches home data. Not fixed; performance investigation recommended.
+Historically the first draw took **17.7 s** and later cold starts ~20–28 s. On the current
+profile build the baseline measured **4.3–5.1 s** cold. The startup path now:
+
+- opens `PackageInfo` and the database in parallel,
+- starts the TV/server checks in parallel,
+- moves the file-DB sync into settings initialization (after `runApp`),
+- defers notifications and high-refresh setup to a post-frame callback.
+
+Measured after the change: **3.4–3.5 s** steady cold, **0.83 s** hot/warm. The first launch
+immediately after APK installation still took ~8 s (Android dex/verification warm-up), then
+settled to ~3.4 s. Remaining work would require a bootstrap loading UI or a faster DB open.
+
+## BUG-025 — Stray keyboard/floating IME after navigation
+
+`SearchScreen` used `autofocus: query == null`, and the focused text field/IME connection
+survived route pushes. Opening a video or the quality sheet could show the keyboard or Gboard's
+floating toolbar. Search focus is now one-shot (only when the search route is opened), and
+`MyRouteObserver` clears focus and explicitly calls `TextInput.hide` on every push/pop.
+Verified on-device: search entry shows the keyboard; video/quality/back leave both the keyboard
+and floating toolbar hidden; returning to search does not reopen it until the field is tapped.
 
 ## BUG-022 — 533 dp tablet uses the phone layout
 

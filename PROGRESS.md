@@ -1,13 +1,14 @@
 # PROGRESS
 
-Last updated: 2026-10-25 (session 4)
+Last updated: 2026-10-25 (session 5)
 
 ## Current phase
 
-Phases 0–11 complete. Tablet verification, logged-in read-only checks and the first motion/
-performance pass are complete. New work: hold-to-2×, codec-aware quality with Auto,
-hardware-first sorting, motion tokens/fades, thumbnail/grid rebuild fixes, reduced-motion
-support and progress-write tuning. The phone and formal DevTools frame trace remain pending.
+Phases 0–11 complete. Tablet verification, logged-in read-only checks, the motion/performance
+pass, and the keyboard/startup fixes are complete. New work: hold-to-2×, codec-aware quality
+with Auto, hardware-first sorting, motion tokens/fades, thumbnail/grid rebuild fixes,
+reduced-motion support, one-shot search focus/IME cleanup, and startup parallelization. The
+phone and formal DevTools frame trace remain pending.
 
 ## Environment baseline (recorded before changes)
 
@@ -80,7 +81,7 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
 | New tests (`motion`, `url_utils`, `handle_response`, `comments`, `codec`) | 29/29 pass |
 | Server-independent settings/file-db tests | 7 pass, 3 fail (see `TEST.md`; environmental/pre-existing) |
 | Live API (unauth + cookie auth) | stats, search, video, channel, comments, feed, subscriptions, playlists, history all 200 |
-| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `4a251834…14fab`, arm64-v8a, debug-signed, `apksigner verify` OK |
+| APK | `dist/clipious-1.22.15-arm64-profile.apk` — 242,578,371 bytes, sha256 `612ab9a1…54027`, arm64-v8a, debug-signed, `apksigner verify` OK |
 | Tablet device tests | PASS for install, server add, home/search/channels/playlists, VOD DASH/progressive/proxy, quality, audio-only, background, downloads, offline, comments (after fix), rotation, logged-in Subscriptions/Playlists/History (read-only), hold-to-2×, codec-aware quality/Auto; live streams BLOCKED by server manifest. See `TEST.md` §6 |
 | Performance | 1080p H.264 hardware track ~11% CPU; AV1 tracks remain software-decoded and may lag (labelled, sorted last, Auto recommended) |
 | Phone device tests | NOT RUN (phone not connected) |
@@ -112,7 +113,13 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug'
   throttled after the UI update.
 - UI parity screenshots match at rest; 2× hold, quality, comments, recommended, queue and
   logged-in tabs still work. Reduced-motion mode launched and remained usable.
-- Cold start is slow (~18–28 s) on this tablet.
+- Keyboard fix: Search requests focus once; route push/pop clears focus and calls
+  `TextInput.hide`. Search opens with the keyboard, but video/quality/back leave both the
+  keyboard and Gboard floating toolbar hidden.
+- Startup: database and `PackageInfo` open in parallel, TV/server checks run in parallel,
+  file-DB sync moved after `runApp`, and notifications/high-refresh setup deferred. Steady
+  cold start 4.3–5.1 s → 3.4–3.5 s; warm start 0.83 s. First run after install is ~8 s due to
+  Android dex/verification warm-up.
 
 ## Build environment (resolved)
 
@@ -164,6 +171,7 @@ project-local JDK, NDK/CMake shims, `android.enableJetifier=false`, and
 - `a2570d2` docs: record tablet device-test results and new findings
 - `3514960` feat(player): hardware-first quality menu and hold-to-2x playback
 - `2209782` perf(ui): smooth motion and reduce render jank
+- `72a7e31` fix(ui): suppress stray keyboard and shorten startup
 - Final performance/UX documentation commit on this branch.
 
 ## Next actions (owner)

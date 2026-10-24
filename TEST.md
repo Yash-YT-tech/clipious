@@ -139,7 +139,7 @@ bash -c 'source .tooling/env.sh && flutter build apk --debug --target-platform a
 |---|---|
 | Path | `dist/clipious-1.22.15-arm64-profile.apk` |
 | Size | 242,578,371 bytes (231.4 MiB) |
-| SHA-256 | `4a25183428ae6b5c7e0e4308571bbd49b5d4652953703a11ef31c369f5714fab` |
+| SHA-256 | `612ab9a1dc39be6e1d34f2c6650954bc4721b0fdc5e89b446ae8b90c6e954027` |
 | Package / version | `com.github.lamarios.clipious`, `1.22.15` (60773) |
 | ABI | `arm64-v8a` |
 | Signature | Android debug key, `apksigner verify` OK |
@@ -249,6 +249,27 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
   placeholders own per-instance tickers, and comments/recommended still build eager columns.
   These were intentionally left for a measured second pass to avoid regressions.
 
+## 7.6 Keyboard and startup fixes (2026-10-25)
+
+Startup (`adb shell am start -W`, Lenovo TB-8505F, profile APK):
+
+| State | Before | After |
+|---|---:|---:|
+| Cold, steady (2 runs) | 4.29 s / 5.06 s | 3.40 s / 3.46 s |
+| Cold, further runs | — | 3.40–3.47 s |
+| Warm/hot | — | 0.83 s |
+| First run immediately after install | — | ~8.0 s (Android dex/verification warm-up) |
+
+Keyboard verification:
+
+- Opening Search focuses the field and shows the keyboard (`mInputShown=true`).
+- Opening a video from Search: `mInputShown=false`; no keyboard or Gboard floating toolbar.
+- Opening Quality: `mInputShown=false`; no floating toolbar.
+- Returning from the video to Search: `mInputShown=false`; keyboard stays hidden until the
+  search field is tapped.
+- No Flutter exceptions during the navigation sequence.
+- Evidence: `128`–`137` in the run directory (search, video, quality, back-to-search).
+
 ## 8. Known limitations
 
 - The phone is untested; the tablet is a single Android 10 / arm64 device.
@@ -257,7 +278,9 @@ audio_flinger`, and app logcat, stored in `.tooling/testing/artifacts/run-202610
   them, sorts hardware H.264/VP9 first and offers Auto. 4K AV1 cannot be made smooth here.
 - Hold-to-2× is temporary; it restores the previous speed and does not overwrite the remembered
   playback-speed setting.
-- Cold start is slow (~18–28 s) on this tablet.
+- Steady cold start is ~3.4–3.5 s and warm start ~0.83 s; the first run immediately after
+  installation is ~8 s due to Android dex/verification warm-up. A bootstrap loading UI or faster
+  DB open would be needed to go lower.
 - The media-session position can stop updating while backgrounded/rotated even though audio
   continues; the internal position and AudioFlinger show progress.
 - At 533 dp, the app uses the phone layout; the 600 dp tablet threshold is not met.

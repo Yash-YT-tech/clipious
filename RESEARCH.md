@@ -293,8 +293,16 @@ task or cloud inference was run.
   1.0`); the badge appears while held.
 - Logged-in Subscriptions/Playlists/History screens loaded read-only with the owner's cookie
   session; no account mutations were performed.
-- Cold start is ~18–28 s; media-session progress can go stale after background/rotation while
-  audio continues (AudioFlinger active).
+- Search autofocus/IME: the field previously re-focused on route changes, leaving the keyboard
+  or Gboard floating toolbar over videos/quality sheets. One-shot search focus plus
+  `TextInput.hide` on route push/pop fixed it. Verified: search entry shows the keyboard;
+  video/quality/back leave it hidden.
+- Startup: `PackageInfo` and DB open in parallel, TV/server checks in parallel, file-DB sync
+  moved after `runApp`, notifications/high-refresh deferred. Measured steady cold start
+  **4.3–5.1 s → 3.4–3.5 s**, warm **0.83 s**; first post-install run ~8 s (Android dex).
+- Historically cold start was ~18–28 s; after the parallel/deferred startup pass steady cold
+  start is 3.4–3.5 s (warm 0.83 s; first post-install run ~8 s for Android dex). Media-session
+  progress can go stale after background/rotation while audio continues (AudioFlinger active).
 
 ### Motion and performance research (2026-10-25)
 

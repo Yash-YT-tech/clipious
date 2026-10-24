@@ -83,6 +83,15 @@ disabled in Clipious settings.
 | D-17 | Open Quality | Tracks show codec labels; H.264/VP9 first, AV1 (software) last; Auto is checked | | NOT TESTED |
 | D-18 | Select 1080p H.264 if offered | Plays smoothly; 2160p AV1 may lag on this tablet | | NOT TESTED |
 
+## D2. Keyboard and launch
+
+| ID | Steps | Expected | Actual | Status |
+|---|---|---|---|---|
+| D2-01 | Open Search | Search field focuses and keyboard appears once | | NOT TESTED |
+| D2-02 | From Search, open a video | Keyboard and floating IME toolbar disappear | | NOT TESTED |
+| D2-03 | Open Quality, then go back | No keyboard/floating toolbar; returning to Search keeps it hidden until the field is tapped | | NOT TESTED |
+| D2-04 | Cold launch, then warm launch from background | No stray keyboard; steady-state cold ~3.4–3.5 s, warm ~0.8 s | | NOT TESTED |
+
 ## E. User data and account behaviour
 
 Authentication is optional. Cookie login was verified on the host side; if you use it, enter

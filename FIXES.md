@@ -202,6 +202,27 @@ Commit hashes are filled in after the incremental commits.
 - **Verification:** Home grid screenshots identical; scroll/no exceptions.
 - **Commit:** `2209782`.
 
+## FIX-020 — One-shot search focus and route input cleanup (BUG-025)
+
+- **Files:** `lib/search/views/screens/search.dart`, `lib/router.dart`.
+- **Change:** search focus is requested once when the search route opens (and only when there
+  is no prefilled query); `MyRouteObserver` clears focus and sends `TextInput.hide` on every
+  push/pop.
+- **Verification:** search entry shows the keyboard; opening a video or quality sheet leaves the
+  keyboard and Gboard floating toolbar hidden; returning to search does not reopen it until the
+  field is tapped.
+- **Commit:** `72a7e31`.
+
+## FIX-021 — Startup parallelization and post-frame deferral (BUG-021)
+
+- **Files:** `lib/main.dart`, `lib/settings/states/settings.dart`.
+- **Change:** `PackageInfo` and database opening run in parallel; TV and server checks run in
+  parallel; file-DB sync moved into settings initialization; notifications and high-refresh
+  setup run after the first frame.
+- **Verification:** steady cold start 4.3–5.1 s → 3.4–3.5 s; warm start 0.83 s; first launch
+  after install still ~8 s due to Android dex/verification warm-up.
+- **Commit:** `72a7e31`.
+
 ## Commit map
 
 | Fix | Commit |
@@ -229,6 +250,8 @@ Commit hashes are filled in after the incremental commits.
 | FIX-017 thumbnail render path | `2209782` |
 | FIX-018 player drag/progress | `2209782` |
 | FIX-019 lazy grid/build scope | `2209782` |
+| FIX-020 search focus/IME cleanup | `72a7e31` |
+| FIX-021 startup parallelization | `72a7e31` |
 | scrcpy/Artemis research + test plan | `196b160` |
 | Device-test results documentation | `a2570d2` |
 
